@@ -1,0 +1,41 @@
+name: educonnect_mobile
+description: "Mobile EduConnect App"
+publish_to: 'none' # Prevent accidental publishing
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Icons for iOS style UI
+  cupertino_icons: ^1.0.8
+
+  # 🧩 Base de données locale
+  sqflite: ^2.3.3
+  path: ^1.8.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Recommended lint rules
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Exemple pour les futurs assets
+  # assets:
+  #   - assets/images/
+  #
+  # Exemple pour les polices
+  # fonts:
+  #   - family: Poppins
+  #     fonts:
+  #       - asset: assets/fonts/Poppins-Regular.ttf
+  #       - asset: assets/fonts/Poppins-Bold.ttf
+  #         weight: 700
