@@ -248,10 +248,10 @@ class AppDatabase {
 
   /// Migration mineure pour anciens clones
   static Future<void> _onUpgrade(
-      Database db,
-      int oldVersion,
-      int newVersion,
-      ) async {
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
     if (oldVersion < 2) {
       await db.execute('PRAGMA foreign_keys = ON;');
       await db.execute(
@@ -260,22 +260,22 @@ class AppDatabase {
 
       await db.execute(
         'CREATE TRIGGER IF NOT EXISTS trg_course_delete_bookmark '
-            'AFTER DELETE ON course FOR EACH ROW BEGIN '
-            'DELETE FROM course_bookmark WHERE course_id = OLD.id; '
-            'DELETE FROM course_review WHERE course_id = OLD.id; '
-            'DELETE FROM course_progress WHERE course_id = OLD.id; '
-            'DELETE FROM result WHERE quiz_id IN (SELECT id FROM quiz WHERE course_id = OLD.id); '
-            'DELETE FROM question WHERE quiz_id IN (SELECT id FROM quiz WHERE course_id = OLD.id); '
-            'DELETE FROM quiz WHERE course_id = OLD.id; '
-            'END;',
+        'AFTER DELETE ON course FOR EACH ROW BEGIN '
+        'DELETE FROM course_bookmark WHERE course_id = OLD.id; '
+        'DELETE FROM course_review WHERE course_id = OLD.id; '
+        'DELETE FROM course_progress WHERE course_id = OLD.id; '
+        'DELETE FROM result WHERE quiz_id IN (SELECT id FROM quiz WHERE course_id = OLD.id); '
+        'DELETE FROM question WHERE quiz_id IN (SELECT id FROM quiz WHERE course_id = OLD.id); '
+        'DELETE FROM quiz WHERE course_id = OLD.id; '
+        'END;',
       );
 
       await db.execute(
         'CREATE TRIGGER IF NOT EXISTS trg_quiz_delete_children '
-            'AFTER DELETE ON quiz FOR EACH ROW BEGIN '
-            'DELETE FROM question WHERE quiz_id = OLD.id; '
-            'DELETE FROM result WHERE quiz_id = OLD.id; '
-            'END;',
+        'AFTER DELETE ON quiz FOR EACH ROW BEGIN '
+        'DELETE FROM question WHERE quiz_id = OLD.id; '
+        'DELETE FROM result WHERE quiz_id = OLD.id; '
+        'END;',
       );
     }
     print(

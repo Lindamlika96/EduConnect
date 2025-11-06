@@ -17,7 +17,7 @@ dependencies:
   # 🧩 Base de données locale
   sqflite: ^2.3.3
   path: ^1.8.3
-
+  pdfx: ^2.6.0   # 👈 ajoute cette ligne ici
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -27,6 +27,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/pdfs/
+
 
   # Exemple pour les futurs assets
   # assets:

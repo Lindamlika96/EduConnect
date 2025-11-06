@@ -9,9 +9,8 @@ Future<void> main() async {
   await AppDatabase.resetDatabase(); // ✅ Supprime et recrée la base proprement
   final db = await AppDatabase.database;
 
-
   final tables = await db.rawQuery(
-      "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
+    "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;",
   );
 
   print('📋 Liste des tables présentes :');
