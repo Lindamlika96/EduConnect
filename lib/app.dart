@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:educonnect_mobile/core/widgets/dummy_widget.dart';
+import 'features/users/presentation/pages/login_page.dart';
+import 'features/users/presentation/pages/profile_page.dart';
+import 'features/users/presentation/pages/settings_page.dart';
+import 'features/users/presentation/pages/splash_screen.dart';
+import 'features/users/presentation/pages/main_page.dart';
+import 'features/users/presentation/pages/register_page.dart';
+import 'features/placeholders/placeholder_pages.dart';
+
 
 class EduConnectApp extends StatelessWidget {
   const EduConnectApp({super.key});
@@ -13,11 +20,21 @@ class EduConnectApp extends StatelessWidget {
         colorSchemeSeed: const Color(0xFF0066FF),
         useMaterial3: true,
       ),
-      // ⛔️ supprime 'const' ici
-      home: Scaffold(
-        appBar: AppBar(title: const Text('EduConnect')),
-        body: const DummyWidget(),
-      ),
+
+      // 🔹 SplashScreen d’abord, puis routes gérées
+      initialRoute: '/splash',
+
+      routes: {
+        '/splash': (context) => const SplashScreen(),
+        '/login': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
+        '/main': (context) => const MainPage(),
+        '/profile': (context) => const ProfilePage(email: ''),
+        '/settings': (context) => const SettingsPage2(),
+        '/courses': (context) => const CoursesPage(),
+        '/quiz': (context) => const QuizPage(),
+      },
+
     );
   }
 }

@@ -11,12 +11,18 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Session management
+  shared_preferences: ^2.3.2
+
   # Icons for iOS style UI
   cupertino_icons: ^1.0.8
 
   # 🧩 Base de données locale
   sqflite: ^2.3.3
   path: ^1.8.3
+
+  # ✨ Animation package
+  flutter_animate: ^4.5.0
 
 dev_dependencies:
   flutter_test:
