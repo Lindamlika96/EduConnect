@@ -1,9 +1,13 @@
+// lib/features/courses/presentation/course_pdf_page.dart
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
+import 'package:educonnect_mobile/features/quizzes/domain/entities/quiz.dart';
+import 'package:educonnect_mobile/features/quizzes/domain/presentation/pages/welcome_page.dart';
 
 class CoursePdfPage extends StatefulWidget {
-  final String path;        // ex: 'assets/pdfs/algo.pdf'
-  final int courseId;       // pour le bouton "Passer au quiz"
+  final String path; // ex: 'assets/pdfs/algo.pdf'
+  final int courseId;
+
   const CoursePdfPage({super.key, required this.path, required this.courseId});
 
   @override
@@ -17,9 +21,13 @@ class _CoursePdfPageState extends State<CoursePdfPage> {
   void initState() {
     super.initState();
     if (widget.path.startsWith('assets/')) {
-      _controller = PdfControllerPinch(document: PdfDocument.openAsset(widget.path));
+      _controller = PdfControllerPinch(
+        document: PdfDocument.openAsset(widget.path),
+      );
     } else {
-      _controller = PdfControllerPinch(document: PdfDocument.openFile(widget.path));
+      _controller = PdfControllerPinch(
+        document: PdfDocument.openFile(widget.path),
+      );
     }
   }
 
@@ -30,16 +38,17 @@ class _CoursePdfPageState extends State<CoursePdfPage> {
   }
 
   void _goToQuiz() {
-    // TODO: remplacer par ta vraie navigation quiz
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('TODO: Naviguer vers le quiz')),
+    final quiz = Quiz(
+      id: widget.courseId,
+      title: "Quiz du cours ${widget.courseId}",
+      courseId: widget.courseId,
     );
-  }
 
-  void _showSummary() {
-    // TODO: brancher Gemini plus tard
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Résumé IA (à venir)')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WelcomePage(quiz: quiz, questionCount: 10, duration: 5),
+      ),
     );
   }
 
@@ -53,13 +62,6 @@ class _CoursePdfPageState extends State<CoursePdfPage> {
           padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
           child: Row(
             children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: _showSummary,
-                  child: const Text('Voir le résumé'),
-                ),
-              ),
-              const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
                   onPressed: _goToQuiz,
