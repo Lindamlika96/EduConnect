@@ -46,7 +46,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
             final desc = '${course['description_html'] ?? ''}';
             final rating = course['rating_avg'];
             final students = course['students_count'];
-            final pdfPath = course['pdf_path'] as String?; // ex: assets/pdfs/demo_course.pdf
+            final pdfPath = course['pdf_path'] as String?;
 
             return Scaffold(
               appBar: AppBar(title: Text(title)),
@@ -59,35 +59,22 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                     const SizedBox(height: 12),
                     Text(desc),
                     const Spacer(),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.play_arrow),
-                            label: const Text('Commencer le cours'),
-                            onPressed: pdfPath == null
-                                ? null
-                                : () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => CoursePdfPage(path: pdfPath),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              // TODO: Naviguer vers la page Quiz associée
-                              // Navigator.pushNamed(context, '/quiz?courseId=${widget.courseId}');
-                            },
-                            child: const Text('Passer au quiz'),
-                          ),
-                        ),
-                      ],
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.play_arrow),
+                        label: const Text('Commencer le cours'),
+                        onPressed: pdfPath == null
+                            ? null
+                            : () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CoursePdfPage(path: pdfPath, courseId: widget.courseId),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),

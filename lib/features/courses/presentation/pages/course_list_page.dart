@@ -1,4 +1,3 @@
-// lib/features/courses/presentation/pages/course_list_page.dart
 import 'package:flutter/material.dart';
 
 import '../../presentation/di.dart';
@@ -50,7 +49,7 @@ class _CourseListPageState extends State<CourseListPage> {
 
               if (rows.isEmpty) {
                 return const Center(
-                  child: Text('Aucun cours. Clique + pour en ajouter un de démo.'),
+                  child: Text('Aucun cours (utilise le + pour en ajouter un).'),
                 );
               }
 
