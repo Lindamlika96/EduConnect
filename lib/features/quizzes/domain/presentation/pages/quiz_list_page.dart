@@ -10,8 +10,13 @@ import 'quiz_play_page.dart';
 
 class QuizListPage extends StatefulWidget {
   final int? courseId;
+  final int userId; // ✅ Ajouté
 
-  const QuizListPage({super.key, this.courseId});
+  const QuizListPage({
+    super.key,
+    this.courseId,
+    required this.userId, // ✅ Ajouté dans le constructeur
+  });
 
   @override
   State<QuizListPage> createState() => _QuizListPageState();
@@ -56,7 +61,6 @@ class _QuizListPageState extends State<QuizListPage> {
               MaterialPageRoute(builder: (_) => const RankingPage()),
             ),
           ),
-          // ✅ Bouton DebugDatabase supprimé
         ],
       ),
       body: loading
@@ -75,7 +79,10 @@ class _QuizListPageState extends State<QuizListPage> {
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => QuizPlayPage(quiz: quiz),
+                        builder: (_) => QuizPlayPage(
+                          quiz: quiz,
+                          userId: widget.userId, // ✅ Corrigé ici
+                        ),
                       ),
                     ),
                   ),

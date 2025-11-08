@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 
 class CertificateService {
   Future<Uint8List> generateCertificate({
+    required String userId,
     required String userName,
     required String quizTitle,
     required int score,
@@ -12,9 +13,15 @@ class CertificateService {
   }) async {
     final pdf = pw.Document();
 
+    final date = DateTime.now();
+    final formattedDate =
+        "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+    final ratio = ((score / total) * 100).toStringAsFixed(1);
+
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
         build: (pw.Context context) {
           return pw.Container(
             decoration: pw.BoxDecoration(
@@ -25,7 +32,7 @@ class CertificateService {
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 pw.Text(
-                  "Certificat de Réussite",
+                  "🎓 Certificat de Réussite",
                   style: pw.TextStyle(
                     fontSize: 32,
                     fontWeight: pw.FontWeight.bold,
@@ -47,14 +54,26 @@ class CertificateService {
                 ),
                 pw.SizedBox(height: 20),
                 pw.Text(
-                  "Pour avoir complété le quiz : $quizTitle",
+                  "Pour avoir complété avec succès le cours :",
                   style: pw.TextStyle(fontSize: 16),
+                ),
+                pw.Text(
+                  quizTitle,
+                  style: pw.TextStyle(
+                    fontSize: 18,
+                    fontWeight: pw.FontWeight.bold,
+                  ),
                   textAlign: pw.TextAlign.center,
                 ),
-                pw.SizedBox(height: 10),
+                pw.SizedBox(height: 12),
                 pw.Text(
-                  "Score obtenu : $score / $total",
+                  "Score : $score / $total  •  $ratio%",
                   style: pw.TextStyle(fontSize: 16),
+                ),
+                pw.SizedBox(height: 8),
+                pw.Text(
+                  "Identifiant utilisateur : $userId",
+                  style: pw.TextStyle(fontSize: 14, color: PdfColors.grey700),
                 ),
                 pw.SizedBox(height: 30),
                 pw.Text(
@@ -62,9 +81,18 @@ class CertificateService {
                   style: pw.TextStyle(fontSize: 20, color: PdfColors.green800),
                 ),
                 pw.Spacer(),
-                pw.Text(
-                  "Date : ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}",
-                  style: pw.TextStyle(fontSize: 14),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(
+                      "Date : $formattedDate",
+                      style: pw.TextStyle(fontSize: 14),
+                    ),
+                    pw.Text(
+                      "Signature : ____________________",
+                      style: pw.TextStyle(fontSize: 14),
+                    ),
+                  ],
                 ),
               ],
             ),

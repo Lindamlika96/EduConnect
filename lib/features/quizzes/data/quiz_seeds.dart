@@ -435,4 +435,214 @@ final quizSeeds = {
       },
     ],
   },
+  4: {
+    'title': 'Quiz Réseaux',
+    'questions': [
+      // --- FACILE ---
+      {
+        'text': 'Quel est le rôle d’un routeur ?',
+        'option_a': 'Stocker des données',
+        'option_b': 'Afficher des pages web',
+        'option_c': 'Transmettre des paquets entre réseaux',
+        'option_d': 'Créer des adresses IP',
+        'correct_index': 2,
+        'explanation':
+            'Le routeur transmet les paquets entre différents réseaux.',
+        'difficulty': 'facile',
+      },
+      {
+        'text': 'Que signifie l’acronyme IP ?',
+        'option_a': 'Internet Protocol',
+        'option_b': 'Internal Process',
+        'option_c': 'Input Port',
+        'option_d': 'Instant Packet',
+        'correct_index': 0,
+        'explanation': 'IP signifie Internet Protocol.',
+        'difficulty': 'facile',
+      },
+      {
+        'text': 'Quel protocole est utilisé pour envoyer des emails ?',
+        'option_a': 'HTTP',
+        'option_b': 'FTP',
+        'option_c': 'SMTP',
+        'option_d': 'DNS',
+        'correct_index': 2,
+        'explanation': 'SMTP est utilisé pour envoyer des emails.',
+        'difficulty': 'facile',
+      },
+
+      // --- MOYEN ---
+      {
+        'text': 'Quelle est la fonction du protocole DNS ?',
+        'option_a': 'Crypter les données',
+        'option_b': 'Attribuer des adresses IP',
+        'option_c': 'Traduire les noms de domaine en IP',
+        'option_d': 'Envoyer des fichiers',
+        'correct_index': 2,
+        'explanation': 'DNS traduit les noms de domaine en adresses IP.',
+        'difficulty': 'moyen',
+      },
+      {
+        'text': 'Quelle couche du modèle OSI gère les connexions réseau ?',
+        'option_a': 'Application',
+        'option_b': 'Transport',
+        'option_c': 'Réseau',
+        'option_d': 'Session',
+        'correct_index': 3,
+        'explanation':
+            'La couche Session gère les connexions et la synchronisation.',
+        'difficulty': 'moyen',
+      },
+      {
+        'text': 'Quel protocole est utilisé pour le transfert de fichiers ?',
+        'option_a': 'SMTP',
+        'option_b': 'FTP',
+        'option_c': 'HTTP',
+        'option_d': 'DHCP',
+        'correct_index': 1,
+        'explanation': 'FTP est utilisé pour transférer des fichiers.',
+        'difficulty': 'moyen',
+      },
+
+      // --- DIFFICILE ---
+      {
+        'text': 'Quelle est la différence entre TCP et UDP ?',
+        'option_a': 'TCP est plus rapide que UDP',
+        'option_b': 'UDP est orienté connexion',
+        'option_c': 'TCP garantit la livraison des paquets',
+        'option_d': 'UDP crypte les données',
+        'correct_index': 2,
+        'explanation':
+            'TCP garantit la livraison, UDP est plus rapide mais non fiable.',
+        'difficulty': 'difficile',
+      },
+      {
+        'text': 'Quel est le rôle du protocole ARP ?',
+        'option_a': 'Attribuer des adresses IP dynamiques',
+        'option_b': 'Associer une adresse IP à une adresse MAC',
+        'option_c': 'Crypter les communications',
+        'option_d': 'Gérer les connexions TCP',
+        'correct_index': 1,
+        'explanation': 'ARP associe une adresse IP à une adresse MAC.',
+        'difficulty': 'difficile',
+      },
+      {
+        'text': 'Quelle est la taille d’une adresse IPv6 ?',
+        'option_a': '32 bits',
+        'option_b': '64 bits',
+        'option_c': '128 bits',
+        'option_d': '256 bits',
+        'correct_index': 2,
+        'explanation': 'Une adresse IPv6 est codée sur 128 bits.',
+        'difficulty': 'difficile',
+      },
+    ],
+  },
+  5: {
+    'title': 'IA – Introduction',
+    'questions': [
+      // --- FACILE ---
+      {
+        'text': 'Que signifie IA ?',
+        'option_a': 'Interface Adaptée',
+        'option_b': 'Intelligence Artificielle',
+        'option_c': 'Instruction Automatique',
+        'option_d': 'Information Active',
+        'correct_index': 1,
+        'explanation': 'IA signifie Intelligence Artificielle.',
+        'difficulty': 'facile',
+      },
+      {
+        'text': 'Quel est l’objectif principal de l’IA ?',
+        'option_a': 'Créer des jeux',
+        'option_b': 'Simuler l’intelligence humaine',
+        'option_c': 'Stocker des données',
+        'option_d': 'Gérer les réseaux',
+        'correct_index': 1,
+        'explanation':
+            'L’IA vise à simuler l’intelligence humaine dans les machines.',
+        'difficulty': 'facile',
+      },
+      {
+        'text': 'Quel domaine est un sous-ensemble de l’IA ?',
+        'option_a': 'Big Data',
+        'option_b': 'Machine Learning',
+        'option_c': 'Cloud Computing',
+        'option_d': 'Sécurité réseau',
+        'correct_index': 1,
+        'explanation': 'Le Machine Learning est un sous-domaine de l’IA.',
+        'difficulty': 'facile',
+      },
+
+      // --- MOYEN ---
+      {
+        'text': 'Quel type d’apprentissage utilise des données étiquetées ?',
+        'option_a': 'Apprentissage supervisé',
+        'option_b': 'Apprentissage non supervisé',
+        'option_c': 'Apprentissage par renforcement',
+        'option_d': 'Apprentissage profond',
+        'correct_index': 0,
+        'explanation':
+            'L’apprentissage supervisé utilise des données avec des labels.',
+        'difficulty': 'moyen',
+      },
+      {
+        'text': 'Quel algorithme est souvent utilisé pour la classification ?',
+        'option_a': 'K-means',
+        'option_b': 'Réseau de neurones',
+        'option_c': 'Régression linéaire',
+        'option_d': 'Algorithme génétique',
+        'correct_index': 1,
+        'explanation':
+            'Les réseaux de neurones sont efficaces pour la classification.',
+        'difficulty': 'moyen',
+      },
+      {
+        'text': 'Quel est le rôle d’un perceptron ?',
+        'option_a': 'Stocker des données',
+        'option_b': 'Simuler un neurone artificiel',
+        'option_c': 'Gérer les connexions réseau',
+        'option_d': 'Créer des images',
+        'correct_index': 1,
+        'explanation': 'Le perceptron est un modèle de neurone artificiel.',
+        'difficulty': 'moyen',
+      },
+
+      // --- DIFFICILE ---
+      {
+        'text': 'Quel est le principal défi de l’IA éthique ?',
+        'option_a': 'La vitesse de calcul',
+        'option_b': 'La consommation énergétique',
+        'option_c': 'Les biais algorithmiques',
+        'option_d': 'La taille des modèles',
+        'correct_index': 2,
+        'explanation':
+            'Les biais algorithmiques posent des problèmes éthiques majeurs.',
+        'difficulty': 'difficile',
+      },
+      {
+        'text':
+            'Quel est le rôle de la fonction d’activation dans un réseau de neurones ?',
+        'option_a': 'Ajouter du bruit',
+        'option_b': 'Normaliser les données',
+        'option_c': 'Introduire de la non-linéarité',
+        'option_d': 'Réduire la taille du modèle',
+        'correct_index': 2,
+        'explanation':
+            'La fonction d’activation permet d’introduire de la non-linéarité.',
+        'difficulty': 'difficile',
+      },
+      {
+        'text': 'Quel est l’objectif de l’apprentissage par renforcement ?',
+        'option_a': 'Minimiser les erreurs de prédiction',
+        'option_b': 'Maximiser une récompense cumulative',
+        'option_c': 'Réduire la taille des données',
+        'option_d': 'Augmenter la vitesse d’exécution',
+        'correct_index': 1,
+        'explanation':
+            'L’apprentissage par renforcement vise à maximiser une récompense.',
+        'difficulty': 'difficile',
+      },
+    ],
+  },
 };

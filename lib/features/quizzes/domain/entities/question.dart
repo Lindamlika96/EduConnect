@@ -6,6 +6,9 @@ class Question {
   final int correctIndex;
   final String? explanation;
   final String difficulty;
+  final String? codeSnippet;
+  final String? expectedOutput;
+  final int? languageId;
 
   Question({
     required this.id,
@@ -15,6 +18,9 @@ class Question {
     required this.correctIndex,
     this.explanation,
     required this.difficulty,
+    this.codeSnippet,
+    this.expectedOutput,
+    this.languageId,
   });
 
   factory Question.fromMap(Map<String, Object?> m) => Question(
@@ -30,5 +36,8 @@ class Question {
     correctIndex: m['correct_index'] as int,
     explanation: m['explanation'] as String?,
     difficulty: m['difficulty'] as String? ?? 'facile',
+    codeSnippet: m['code_snippet'] as String?,
+    expectedOutput: m['expected_output'] as String?,
+    languageId: m['language_id'] as int?,
   );
 }

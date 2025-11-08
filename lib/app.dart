@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:educonnect_mobile/core/widgets/dummy_widget.dart';
+import 'package:educonnect_mobile/core/theme/app_theme.dart'; // adapte le chemin si besoin
 
 import 'features/courses/presentation/pages/course_list_page.dart';
 

@@ -1,11 +1,12 @@
-// lib/features/courses/presentation/course_pdf_page.dart
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:educonnect_mobile/features/quizzes/domain/entities/quiz.dart';
 import 'package:educonnect_mobile/features/quizzes/domain/presentation/pages/welcome_page.dart';
+import 'package:educonnect_mobile/features/quizzes/domain/presentation/pages/quiz_pratique_page.dart';
+import 'package:educonnect_mobile/features/quizzes/data/pratique_quiz_seeds.dart';
 
 class CoursePdfPage extends StatefulWidget {
-  final String path; // ex: 'assets/pdfs/algo.pdf'
+  final String path;
   final int courseId;
 
   const CoursePdfPage({super.key, required this.path, required this.courseId});
@@ -20,15 +21,9 @@ class _CoursePdfPageState extends State<CoursePdfPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.path.startsWith('assets/')) {
-      _controller = PdfControllerPinch(
-        document: PdfDocument.openAsset(widget.path),
-      );
-    } else {
-      _controller = PdfControllerPinch(
-        document: PdfDocument.openFile(widget.path),
-      );
-    }
+    _controller = widget.path.startsWith('assets/')
+        ? PdfControllerPinch(document: PdfDocument.openAsset(widget.path))
+        : PdfControllerPinch(document: PdfDocument.openFile(widget.path));
   }
 
   @override
@@ -47,9 +42,26 @@ class _CoursePdfPageState extends State<CoursePdfPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => WelcomePage(quiz: quiz, questionCount: 10, duration: 5),
+        builder: (_) =>
+            WelcomePage(quiz: quiz, questionCount: 10, duration: 5, userId: 1),
       ),
     );
+  }
+
+  void _goToQuizAutomatique() {
+    final questions = pratiqueQuizSeeds[widget.courseId];
+    if (questions != null && questions.isNotEmpty) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => QuizPratiquePage(question: questions.first),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Aucune question pratique disponible')),
+      );
+    }
   }
 
   @override
@@ -66,6 +78,13 @@ class _CoursePdfPageState extends State<CoursePdfPage> {
                 child: ElevatedButton(
                   onPressed: _goToQuiz,
                   child: const Text('Passer au quiz'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: _goToQuizAutomatique,
+                  child: const Text('Quiz automatique'),
                 ),
               ),
             ],

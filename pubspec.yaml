@@ -27,6 +27,7 @@ dependencies:
   printing: ^5.12.0
   lottie: ^2.2.0 # 👈 ajoute cette ligne ici
   screen_protector: ^1.4.5
+  google_fonts: ^6.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

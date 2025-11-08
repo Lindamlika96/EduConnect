@@ -60,21 +60,23 @@ class _RankingPageState extends State<RankingPage> {
       case 2:
         return '🥉';
       default:
-        return '${index + 1}';
+        return '🏅';
     }
   }
 
-  Color? _highlightColor(int index) {
-    if (index == 0) return Colors.amber[100];
-    if (index == 1) return Colors.grey[200];
-    if (index == 2) return Colors.brown[100];
-    return null;
+  Color _barColor(double percent) {
+    if (percent >= 80) return Colors.green;
+    if (percent >= 60) return Colors.orange;
+    return Colors.red;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Classement global')),
+      appBar: AppBar(
+        title: const Text('🏆 Classement global'),
+        backgroundColor: Colors.indigo,
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _top.isEmpty
@@ -82,42 +84,41 @@ class _RankingPageState extends State<RankingPage> {
           : Column(
               children: [
                 // 📊 Graphique global
-                if (_top.isNotEmpty)
-                  SizedBox(
-                    height: 200,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: LineChart(
-                        LineChartData(
-                          titlesData: FlTitlesData(
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: true),
-                            ),
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: true),
-                            ),
+                SizedBox(
+                  height: 200,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: LineChart(
+                      LineChartData(
+                        titlesData: FlTitlesData(
+                          leftTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: true),
                           ),
-                          lineBarsData: [
-                            LineChartBarData(
-                              spots: List.generate(
-                                _top.length,
-                                (i) => FlSpot(
-                                  (i + 1).toDouble(),
-                                  (_top[i].score / _top[i].total) * 100,
-                                ),
-                              ),
-                              isCurved: true,
-                              color: Colors.blue,
-                              barWidth: 3,
-                              dotData: FlDotData(show: true),
-                            ),
-                          ],
+                          bottomTitles: AxisTitles(
+                            sideTitles: SideTitles(showTitles: true),
+                          ),
                         ),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: List.generate(
+                              _top.length,
+                              (i) => FlSpot(
+                                (i + 1).toDouble(),
+                                (_top[i].score / _top[i].total) * 100,
+                              ),
+                            ),
+                            isCurved: true,
+                            color: Colors.indigo,
+                            barWidth: 3,
+                            dotData: FlDotData(show: true),
+                          ),
+                        ],
                       ),
                     ),
                   ),
+                ),
 
-                // 🏆 Liste des scores
+                // 🏅 Liste des scores
                 Expanded(
                   child: ListView.separated(
                     padding: const EdgeInsets.all(12),
@@ -125,21 +126,37 @@ class _RankingPageState extends State<RankingPage> {
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, i) {
                       final r = _top[i];
-                      final percent = (r.score / r.total * 100).toStringAsFixed(
-                        1,
-                      );
+                      final percent = (r.score / r.total * 100);
+                      final percentText = percent.toStringAsFixed(1);
+
                       return Card(
-                        color: _highlightColor(i),
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: ListTile(
                           leading: Text(
                             _trophy(i),
-                            style: const TextStyle(fontSize: 22),
+                            style: const TextStyle(fontSize: 26),
                           ),
                           title: Text(
-                            'Score: ${r.score} / ${r.total}  ($percent %)',
+                            'Quiz ${r.quizId} — $percentText%',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          subtitle: Text(
-                            'Quiz ${r.quizId} — ${r.date.toLocal().toString().split(".").first}',
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Score: ${r.score} / ${r.total}'),
+                              Text(
+                                'Date: ${r.date.toLocal().toString().split(".").first}',
+                              ),
+                              const SizedBox(height: 6),
+                              LinearProgressIndicator(
+                                value: percent / 100,
+                                color: _barColor(percent),
+                                backgroundColor: Colors.grey[300],
+                              ),
+                            ],
                           ),
                         ),
                       );

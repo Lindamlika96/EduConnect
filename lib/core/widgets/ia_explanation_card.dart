@@ -12,65 +12,86 @@ class IAExplanationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color accentColor = isCorrect
+        ? Colors.greenAccent
+        : Colors.blueAccent;
+
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: LinearGradient(
+          colors: [const Color(0xFF1E1E1E), const Color(0xFF2C2C2C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.4),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // ✅ En-tête sans animation
-          Icon(
-            isCorrect ? Icons.check_circle : Icons.psychology_alt,
-            size: 60,
-            color: isCorrect ? Colors.green : const Color(0xFF0066FF),
+          // ✅ Icône dans un cercle coloré
+          CircleAvatar(
+            radius: 36,
+            backgroundColor: accentColor.withOpacity(0.15),
+            child: Icon(
+              isCorrect ? Icons.check_circle : Icons.psychology_alt,
+              size: 48,
+              color: accentColor,
+            ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           Text(
             isCorrect ? "Bonne réponse ✅" : "Explication IA 🤖",
             style: TextStyle(
               fontFamily: 'Poppins',
-              fontSize: 20,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: isCorrect ? Colors.green : const Color(0xFF0066FF),
+              color: accentColor,
             ),
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
 
           Text(
             explanation,
-            textAlign: TextAlign.center,
+            textAlign: TextAlign.justify,
             style: const TextStyle(
               fontFamily: 'Poppins',
               fontSize: 16,
-              color: Color(0xFF1E1E1E),
+              height: 1.4,
+              color: Colors.white70,
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
-          ElevatedButton.icon(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_forward_rounded),
-            label: const Text("Continuer"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0066FF),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_forward_rounded),
+              label: const Text("Continuer"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                textStyle: const TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),

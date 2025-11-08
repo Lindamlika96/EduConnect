@@ -46,12 +46,14 @@ class QuizPlayPage extends StatefulWidget {
   final Quiz quiz;
   final String mode;
   final String? difficulty;
+  final int userId;
 
   const QuizPlayPage({
     super.key,
     required this.quiz,
     this.mode = "classique",
     this.difficulty,
+    required this.userId,
   });
 
   @override
@@ -238,6 +240,7 @@ class _QuizPlayPageState extends State<QuizPlayPage>
               quizId: widget.quiz.id,
               questions: questions,
               userAnswers: userAnswers,
+              userId: widget.userId,
             ),
           ),
         );
@@ -427,6 +430,7 @@ class _QuizPlayPageState extends State<QuizPlayPage>
                                             quizId: widget.quiz.id,
                                             questions: questions,
                                             userAnswers: userAnswers,
+                                            userId: widget.userId,
                                           ),
                                         ),
                                       );

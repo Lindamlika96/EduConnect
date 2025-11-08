@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class OpenAIService {
-  final String apiKey =
-      "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";
+  final String apiKey = "";
 
   /// Explication après une réponse
   Future<String> getExplanation(

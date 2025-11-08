@@ -1,11 +1,9 @@
-import 'package:educonnect_mobile/features/quizzes/services/certificate_service.dart'
-    show CertificateService;
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'dart:math';
-import 'package:educonnect_mobile/features/quizzes/domain/entities/question.dart';
-
 import 'package:printing/printing.dart';
+import 'package:educonnect_mobile/features/quizzes/domain/entities/question.dart';
+import 'package:educonnect_mobile/features/quizzes/services/certificate_service.dart';
 
 class ResultPage extends StatefulWidget {
   final int score;
@@ -13,6 +11,7 @@ class ResultPage extends StatefulWidget {
   final int quizId;
   final List<Question> questions;
   final List<int> userAnswers;
+  final int userId; // 👈 Ajout du userId
 
   const ResultPage({
     super.key,
@@ -21,6 +20,7 @@ class ResultPage extends StatefulWidget {
     required this.quizId,
     required this.questions,
     required this.userAnswers,
+    required this.userId,
   });
 
   @override
@@ -86,7 +86,7 @@ class _ResultPageState extends State<ResultPage> {
     final stats = _calculateStats();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Résultats")),
+      appBar: AppBar(title: const Text("🎓 Fin du cours")),
       body: Stack(
         children: [
           Center(
@@ -142,35 +142,57 @@ class _ResultPageState extends State<ResultPage> {
                       final correct = entry.value["correct"]!;
                       final total = entry.value["total"]!;
                       return Card(
+                        elevation: 2,
                         child: ListTile(
-                          title: Text("$diff : $correct / $total"),
+                          leading: const Icon(Icons.bar_chart),
+                          title: Text("Difficulté : $diff"),
+                          subtitle: Text(
+                            "Réponses correctes : $correct / $total",
+                          ),
                         ),
                       );
                     }),
 
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    const SizedBox(height: 24),
+                    Text(
+                      "🎉 Félicitations Wissal ! Tu as terminé le cours avec succès.",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Boutons
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.center,
                       children: [
                         ElevatedButton.icon(
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.arrow_back),
                           label: const Text("Retour"),
                         ),
-                        const SizedBox(width: 16),
                         ElevatedButton.icon(
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.refresh),
                           label: const Text("Rejouer"),
                         ),
-                        const SizedBox(width: 16),
                         ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            foregroundColor: Colors.white,
+                          ),
                           onPressed: () async {
                             final certificateService = CertificateService();
                             final pdfData = await certificateService
                                 .generateCertificate(
+                                  userId: widget.userId.toString(),
                                   userName: "Wissal",
-                                  quizTitle: "Quiz #${widget.quizId}",
+                                  quizTitle: "Certificat de fin de cours",
                                   score: widget.score,
                                   total: widget.total,
                                 );
@@ -179,7 +201,7 @@ class _ResultPageState extends State<ResultPage> {
                             );
                           },
                           icon: const Icon(Icons.picture_as_pdf),
-                          label: const Text("Certificat"),
+                          label: const Text("Télécharger le certificat"),
                         ),
                       ],
                     ),
@@ -188,6 +210,8 @@ class _ResultPageState extends State<ResultPage> {
               ),
             ),
           ),
+
+          // Confettis
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
