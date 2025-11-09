@@ -47,7 +47,7 @@ class _QuizPratiquePageState extends State<QuizPratiquePage> {
   Future<void> runCode() async {
     setState(() {
       loading = true;
-      result = '';
+      result = 'Running code...';
       isCorrect = null;
     });
 
@@ -74,9 +74,8 @@ class _QuizPratiquePageState extends State<QuizPratiquePage> {
       final cleanedOutput = output.trim();
 
       setState(() {
-        result = cleanedOutput.isEmpty
-            ? '⚠️ Aucune sortie reçue'
-            : cleanedOutput;
+        result +=
+            '\n${cleanedOutput.isEmpty ? '⚠️ Aucune sortie reçue' : cleanedOutput}';
         isCorrect =
             cleanedOutput == expected ||
             cleanedOutput == expected.replaceAll('\n', '');
@@ -91,30 +90,48 @@ class _QuizPratiquePageState extends State<QuizPratiquePage> {
     }
   }
 
+  Widget _buildDot(Color color) {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.6),
+            blurRadius: 4,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final question = widget.question;
 
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Quiz pratique'),
-        backgroundColor: Colors.deepPurple,
-        elevation: 2,
+        title: const Text('Code Editor'),
+        backgroundColor: Colors.black,
+        elevation: 0,
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Progression + Timer
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: LinearProgressIndicator(
                     value: (widget.currentIndex + 1) / widget.total,
-                    backgroundColor: Colors.grey[300],
-                    color: Colors.deepPurple,
+                    backgroundColor: Colors.grey[800],
+                    color: Colors.blueAccent,
                     minHeight: 6,
                   ),
                 ),
@@ -143,50 +160,35 @@ class _QuizPratiquePageState extends State<QuizPratiquePage> {
             const SizedBox(height: 12),
             Text(
               'Question ${widget.currentIndex + 1} / ${widget.total}',
-              style: const TextStyle(fontWeight: FontWeight.w500),
+              style: const TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 16),
 
-            // Question visible
-            Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              color: Colors.deepPurple[50],
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(
-                  question['text'] ?? '',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
-                ),
+            // Question
+            Text(
+              question['text'] ?? '',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
             ),
+            const SizedBox(height: 16),
 
-            const SizedBox(height: 20),
-            const Text(
-              '🧠 Code à écrire',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-
-            // Champ de code sombre
+            // Code editor
             Container(
               decoration: BoxDecoration(
                 color: Colors.black,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade700),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blueAccent),
               ),
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               child: TextField(
                 controller: _controller,
-                maxLines: 12,
+                maxLines: 10,
                 style: const TextStyle(
                   fontFamily: 'monospace',
+                  fontSize: 14,
                   color: Colors.greenAccent,
                 ),
                 decoration: const InputDecoration.collapsed(
@@ -197,23 +199,37 @@ class _QuizPratiquePageState extends State<QuizPratiquePage> {
               ),
             ),
 
+            const SizedBox(height: 12),
+
+            // 3 points colorés
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildDot(Colors.red),
+                const SizedBox(width: 8),
+                _buildDot(Colors.yellow),
+                const SizedBox(width: 8),
+                _buildDot(Colors.green),
+              ],
+            ),
+
             const SizedBox(height: 16),
 
-            // Boutons
+            // Buttons
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: loading ? null : runCode,
                     icon: const Icon(Icons.play_arrow),
-                    label: const Text('Compiler / Exécuter'),
+                    label: const Text('Run Code'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple,
+                      backgroundColor: Colors.blueAccent,
                       foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
                 ),
@@ -221,14 +237,14 @@ class _QuizPratiquePageState extends State<QuizPratiquePage> {
                 ElevatedButton.icon(
                   onPressed: resetCode,
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Réinitialiser'),
+                  label: const Text('Reset'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey[600],
+                    backgroundColor: Colors.grey[700],
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ],
@@ -236,13 +252,18 @@ class _QuizPratiquePageState extends State<QuizPratiquePage> {
 
             const SizedBox(height: 20),
 
-            // Résultat
+            // Output console
             if (loading)
-              const Center(child: CircularProgressIndicator())
+              const Center(
+                child: CircularProgressIndicator(color: Colors.greenAccent),
+              )
             else ...[
               const Text(
-                '💬 Sortie du compilateur :',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                '💬 Output:',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Container(
@@ -250,13 +271,14 @@ class _QuizPratiquePageState extends State<QuizPratiquePage> {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.black,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade700),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.greenAccent),
                 ),
                 child: Text(
-                  result,
+                  result.isEmpty ? 'Running code...' : result,
                   style: const TextStyle(
                     fontFamily: 'monospace',
+                    fontSize: 14,
                     color: Colors.greenAccent,
                   ),
                 ),
@@ -280,7 +302,10 @@ class _QuizPratiquePageState extends State<QuizPratiquePage> {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
                     '🎯 Sortie attendue :\n${question['expected_output']}',
-                    style: const TextStyle(fontStyle: FontStyle.italic),
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ),
               if (isCorrect == true && widget.onNext != null)
@@ -293,10 +318,10 @@ class _QuizPratiquePageState extends State<QuizPratiquePage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                   ),
                 ),

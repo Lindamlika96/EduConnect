@@ -1,5 +1,7 @@
+import 'package:educonnect_mobile/features/quizzes/domain/presentation/pages/podium_page';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
+import 'package:lottie/lottie.dart';
 import 'dart:math';
 import 'package:printing/printing.dart';
 import 'package:educonnect_mobile/features/quizzes/domain/entities/question.dart';
@@ -11,7 +13,7 @@ class ResultPage extends StatefulWidget {
   final int quizId;
   final List<Question> questions;
   final List<int> userAnswers;
-  final int userId; // 👈 Ajout du userId
+  final int userId;
 
   const ResultPage({
     super.key,
@@ -80,13 +82,29 @@ class _ResultPageState extends State<ResultPage> {
     return stats;
   }
 
+  List<Map<String, dynamic>> getSortedScores() {
+    final scores = [
+      {"username": "Wissal", "userId": widget.userId, "score": widget.score},
+      {"username": "Yasmine", "userId": 102, "score": 26},
+      {"username": "Omar", "userId": 103, "score": 22},
+      {"username": "Sami", "userId": 104, "score": 18},
+    ];
+    scores.sort((a, b) {
+      final scoreA = a['score'] as int? ?? 0;
+      final scoreB = b['score'] as int? ?? 0;
+      return scoreB.compareTo(scoreA);
+    });
+    return scores;
+  }
+
   @override
   Widget build(BuildContext context) {
     final ratio = widget.score / widget.total;
     final stats = _calculateStats();
+    final sorted = getSortedScores();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("🎓 Fin du cours")),
+      appBar: AppBar(title: const Text("🎓 Fin du Quiz")),
       body: Stack(
         children: [
           Center(
@@ -95,7 +113,13 @@ class _ResultPageState extends State<ResultPage> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    // Cercle de progression
+                    if (ratio >= 0.2)
+                      Lottie.asset(
+                        'assets/animations/celebrate.json',
+                        height: 140,
+                        fit: BoxFit.contain,
+                      ),
+                    const SizedBox(height: 20),
                     SizedBox(
                       height: 150,
                       width: 150,
@@ -135,8 +159,6 @@ class _ResultPageState extends State<ResultPage> {
                       ),
                     ),
                     const SizedBox(height: 20),
-
-                    // Résumé par difficulté
                     ...stats.entries.map((entry) {
                       final diff = entry.key;
                       final correct = entry.value["correct"]!;
@@ -152,10 +174,9 @@ class _ResultPageState extends State<ResultPage> {
                         ),
                       );
                     }),
-
                     const SizedBox(height: 24),
                     Text(
-                      "🎉 Félicitations Wissal ! Tu as terminé le cours avec succès.",
+                      "🎉 Félicitations ! Tu as terminé le cours avec succès.",
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 18,
@@ -164,8 +185,44 @@ class _ResultPageState extends State<ResultPage> {
                       ),
                     ),
                     const SizedBox(height: 24),
-
-                    // Boutons
+                    const Text(
+                      "📋 Classement complet",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...sorted.map((entry) {
+                      final isMe = entry['userId'] == widget.userId;
+                      return Card(
+                        color: isMe ? Colors.deepPurple[50] : null,
+                        elevation: isMe ? 4 : 2,
+                        child: ListTile(
+                          leading: Icon(
+                            Icons.emoji_events,
+                            color: isMe ? Colors.amber : Colors.grey,
+                          ),
+                          title: Text(
+                            entry['username'],
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: isMe ? Colors.deepPurple : Colors.black,
+                            ),
+                          ),
+                          subtitle: Text("ID utilisateur : ${entry['userId']}"),
+                          trailing: Text(
+                            "${entry['score']} pts",
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 24),
                     Wrap(
                       spacing: 16,
                       runSpacing: 12,
@@ -203,6 +260,23 @@ class _ResultPageState extends State<ResultPage> {
                           icon: const Icon(Icons.picture_as_pdf),
                           label: const Text("Télécharger le certificat"),
                         ),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            final scores = getSortedScores();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PodiumPage(topScores: scores),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.emoji_events),
+                          label: const Text("Voir le podium animé"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.deepPurple,
+                            foregroundColor: Colors.white,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -210,8 +284,16 @@ class _ResultPageState extends State<ResultPage> {
               ),
             ),
           ),
-
-          // Confettis
+          Align(
+            alignment: Alignment.topCenter,
+            child: ConfettiWidget(
+              confettiController: _confettiController,
+              blastDirection: pi / 2,
+              emissionFrequency: 0.05,
+              numberOfParticles: 20,
+              gravity: 0.3,
+            ),
+          ),
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(

@@ -9,6 +9,7 @@ import 'package:educonnect_mobile/features/quizzes/domain/entities/quiz.dart';
 import 'package:educonnect_mobile/features/quizzes/domain/presentation/pages/result_page.dart';
 import 'package:educonnect_mobile/features/quizzes/domain/presentation/pages/level_up_page.dart';
 import 'package:educonnect_mobile/features/quizzes/services/openai_service.dart';
+import 'package:lottie/lottie.dart';
 import 'package:screen_protector/screen_protector.dart';
 import 'package:educonnect_mobile/core/widgets/ia_explanation_card.dart';
 
@@ -304,6 +305,12 @@ class _QuizPlayPageState extends State<QuizPlayPage>
                     ),
                     const SizedBox(width: 40),
                   ],
+                ),
+                const SizedBox(height: 20),
+                Lottie.asset(
+                  'assets/animations/book.json', // adapte le nom
+                  height: 100,
+                  fit: BoxFit.contain,
                 ),
                 const SizedBox(height: 20),
 

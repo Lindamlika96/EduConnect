@@ -45,8 +45,14 @@ class _RankingPageState extends State<RankingPage> {
 
   Future<void> _load() async {
     final rows = await _dao.topScores(limit: 10);
+    final sorted = rows.map((m) => ResultEntry.fromMap(m)).toList();
+    sorted.sort((a, b) {
+      final percentA = a.total == 0 ? 0.0 : a.score / a.total;
+      final percentB = b.total == 0 ? 0.0 : b.score / b.total;
+      return percentB.compareTo(percentA);
+    });
     setState(() {
-      _top = rows.map((m) => ResultEntry.fromMap(m)).toList();
+      _top = sorted;
       _loading = false;
     });
   }
@@ -70,6 +76,40 @@ class _RankingPageState extends State<RankingPage> {
     return Colors.red;
   }
 
+  Widget _buildPodium(List<ResultEntry> top3) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildPodiumUser(top3[1], 2, Colors.grey),
+        _buildPodiumUser(top3[0], 1, Colors.amber),
+        _buildPodiumUser(top3[2], 3, Colors.brown),
+      ],
+    );
+  }
+
+  Widget _buildPodiumUser(ResultEntry r, int rank, Color color) {
+    final percent = r.total == 0
+        ? 0.0
+        : (r.score / r.total * 100).toStringAsFixed(1);
+    return Expanded(
+      child: Column(
+        children: [
+          CircleAvatar(
+            radius: rank == 1 ? 36 : 30,
+            backgroundColor: color,
+            child: Text('$rank', style: const TextStyle(fontSize: 20)),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Quiz ${r.quizId}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Text('$percent%', style: const TextStyle(color: Colors.green)),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,6 +123,12 @@ class _RankingPageState extends State<RankingPage> {
           ? const Center(child: Text('Aucun score enregistré'))
           : Column(
               children: [
+                if (_top.length >= 3)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: _buildPodium(_top.take(3).toList()),
+                  ),
+
                 // 📊 Graphique global
                 SizedBox(
                   height: 200,
@@ -126,7 +172,9 @@ class _RankingPageState extends State<RankingPage> {
                     separatorBuilder: (_, __) => const Divider(height: 1),
                     itemBuilder: (context, i) {
                       final r = _top[i];
-                      final percent = (r.score / r.total * 100);
+                      final percent = r.total == 0
+                          ? 0.0
+                          : (r.score / r.total * 100);
                       final percentText = percent.toStringAsFixed(1);
 
                       return Card(

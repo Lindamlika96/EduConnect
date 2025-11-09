@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class OpenAIService {
-  final String apiKey = "";
+  final String apiKey =
+      "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";
 
-  /// Explication après une réponse
   Future<String> getExplanation(
     String question,
     String userAnswer,

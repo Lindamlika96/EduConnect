@@ -28,6 +28,9 @@ dependencies:
   lottie: ^2.2.0 # 👈 ajoute cette ligne ici
   screen_protector: ^1.4.5
   google_fonts: ^6.0.0
+  
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -44,6 +47,12 @@ flutter:
     - assets/animations/level_up_easy.json
     - assets/animations/level_up_hard.json
     - assets/animations/level_up_medium.json
+    - assets/animations/welcome.json
+    - assets/animations/learning.json
+    - assets/animations/book.json
+    -  assets/animations/ai_bot.json
+    - assets/animations/celebrate.json
+    - assets/animations/podium.json
 
 
 
