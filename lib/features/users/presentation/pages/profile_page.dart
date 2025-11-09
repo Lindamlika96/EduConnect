@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import '../controllers/user_controller.dart';
 import '../../di.dart';
 import 'login_page.dart';
-
+import '../../../admin/pages/admin_users_page.dart'; // ✅ import ajouté pour accéder à la page Admin
 
 class ProfilePage extends StatelessWidget {
   final String email;
@@ -22,6 +21,21 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 10),
             Text(email, style: const TextStyle(fontSize: 16, color: Colors.grey)),
             const SizedBox(height: 30),
+
+            // ✅ Bouton pour ouvrir la page Admin
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AdminUsersPage()),
+                );
+              },
+              child: const Text("👩‍💼 Ouvrir la page Admin"),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 🔒 Bouton de déconnexion
             ElevatedButton.icon(
               onPressed: () async {
                 await controller.logout();

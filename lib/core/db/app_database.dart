@@ -1,5 +1,9 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:logger/logger.dart';
+
+/// Instance globale du logger
+final logger = Logger();
 
 /// Gestionnaire central de la base de données locale SQLite.
 /// Responsable de la création, de l’ouverture et des migrations.
@@ -30,6 +34,7 @@ class AppDatabase {
     );
   }
 
+
   /// Création initiale des tables
   static Future<void> _onCreate(Database db, int version) async {
     // =====================
@@ -49,6 +54,18 @@ class AppDatabase {
         updated_at INTEGER NOT NULL
       );
     ''');
+    // ✅ Insertion de l'utilisateur admin par défaut
+    await db.insert('users', {
+      'name': 'Admin',
+      'email': 'admin@admin.com',
+      'password': '123456', // en local, pas besoin de hash
+      'university': 'Administration Centrale',
+      'role': 'Admin',
+      'age': 30,
+      'gender': 'Femme',
+      'created_at': DateTime.now().millisecondsSinceEpoch,
+      'updated_at': DateTime.now().millisecondsSinceEpoch,
+    });
 
     // =====================
     // 📚 Table COURSE

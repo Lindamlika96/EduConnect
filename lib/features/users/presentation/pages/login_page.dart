@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../controllers/user_controller.dart';
 import '../../di.dart';
 import '../../../../core/utils/session_manager.dart';
+import '../../../admin/pages/admin_users_page.dart'; // ✅ import ajouté
 import 'main_page.dart';
 import 'register_page.dart';
 
@@ -42,17 +42,28 @@ class _LoginPageState extends State<LoginPage> {
       _error = null;
     });
 
-    final success = await _controller.login(
-      _emailController.text.trim(),
-      _passwordController.text.trim(),
-    );
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
+    // ✅ Vérification spéciale : admin
+    if (email == 'admin@admin.com' && password == '123456') {
+      await SessionManager.saveSession(email); // sauvegarde la session admin
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AdminUsersPage()),
+      );
+      return;
+    }
+
+    // 🔹 Connexion utilisateur normale
+    final success = await _controller.login(email, password);
     setState(() => _loading = false);
 
     if (success && mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const MainPage()), // ✅ vers MainPage après login
+        MaterialPageRoute(builder: (_) => const MainPage()),
       );
     } else {
       setState(() => _error = "Email ou mot de passe incorrect.");

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart'; // ⚠️ À ajouter tout en haut
-import 'package:sqflite/sqflite.dart';
 import 'app_database.dart';
+
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // ✅ Correction obligatoire ici
