@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:educonnect_mobile/core/db/app_database.dart';
-import 'package:educonnect_mobile/core/utils/notifiers.dart'; // 👈 ajouté
+import 'package:educonnect_mobile/core/utils/notifiers.dart'; // 🔔 notification de mise à jour
 
 class EditProfilePage extends StatefulWidget {
   final Map<String, dynamic> userData;
-  final VoidCallback? onProfileUpdated; // ✅ Callback ajouté
+  final VoidCallback? onProfileUpdated; // callback optionnel pour mise à jour
 
   const EditProfilePage({
     super.key,
@@ -76,18 +76,18 @@ class _EditProfilePageState extends State<EditProfilePage> {
         const SnackBar(content: Text("✅ Profil mis à jour avec succès !")),
       );
 
-      // 🔄 Notifie que le profil a été mis à jour
+      // 🔄 Notifie la mise à jour (écoutée par DrawerNavigationPage)
       profileUpdatedNotifier.value = !profileUpdatedNotifier.value;
 
-      // ✅ Rafraîchir via callback
+      // ✅ Rafraîchit le profil si callback fourni
       if (widget.onProfileUpdated != null) {
         widget.onProfileUpdated!();
       }
 
-      // ✅ Retour à la page profil après un léger délai
+      // 🔙 Attendre légèrement avant de revenir à la page précédente
       Future.delayed(const Duration(milliseconds: 300), () {
         if (Navigator.canPop(context)) {
-          Navigator.pop(context, true);
+          Navigator.pop(context);
         }
       });
     }
@@ -150,7 +150,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
               const SizedBox(height: 25),
 
-              // 🕒 Informations en lecture seule
+              // 🕒 Informations de création/modification
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
