@@ -14,7 +14,6 @@ class AdminUsersPage extends StatefulWidget {
 class _AdminUsersPageState extends State<AdminUsersPage> {
   List<Map<String, dynamic>> users = [];
 
-  // 🔹 Variables du mini-dashboard
   int usersCount = 0;
   int coursesCount = 0;
   int eventsCount = 0;
@@ -25,14 +24,20 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     _loadDashboardData();
   }
 
-  /// ================================
-  /// 🔹 Chargement des données globales
-  /// ================================
+  /// ===============================
+  /// 🔹 Charger les données
+  /// ===============================
   Future<void> _loadDashboardData() async {
     final db = await AppDatabase.database;
     final resultUsers = await db.query('users');
-    final resultCourses = await db.query('course');
-    final resultEvents = await db.query('events');
+
+    // ⚠️ Ces tables (course, events) doivent exister sinon ignorer
+    List<Map<String, dynamic>> resultCourses = [];
+    List<Map<String, dynamic>> resultEvents = [];
+    try {
+      resultCourses = await db.query('course');
+      resultEvents = await db.query('events');
+    } catch (_) {}
 
     setState(() {
       users = resultUsers;
@@ -42,19 +47,26 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     });
   }
 
+  /// ===============================
   /// 🔹 Supprimer un utilisateur
+  /// ===============================
   Future<void> _deleteUser(int id) async {
     final db = await AppDatabase.database;
     await db.delete('users', where: 'id = ?', whereArgs: [id]);
     _loadDashboardData();
   }
 
+  /// ===============================
   /// 🔹 Ajouter ou modifier un utilisateur
+  /// ===============================
   Future<void> _addOrEditUser({Map<String, dynamic>? user}) async {
     final nameController = TextEditingController(text: user?['name']);
     final emailController = TextEditingController(text: user?['email']);
     final passwordController = TextEditingController(text: user?['password']);
+    final universityController = TextEditingController(text: user?['university']);
     final roleController = TextEditingController(text: user?['role'] ?? 'Étudiant');
+    final ageController = TextEditingController(text: user?['age']?.toString() ?? '');
+    String gender = user?['gender'] ?? 'Homme';
 
     await showDialog(
       context: context,
@@ -67,6 +79,18 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
               TextField(controller: nameController, decoration: const InputDecoration(labelText: "Nom")),
               TextField(controller: emailController, decoration: const InputDecoration(labelText: "Email")),
               TextField(controller: passwordController, decoration: const InputDecoration(labelText: "Mot de passe")),
+              TextField(controller: universityController, decoration: const InputDecoration(labelText: "Université")),
+              TextField(controller: ageController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: "Âge")),
+              const SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: gender,
+                items: const [
+                  DropdownMenuItem(value: "Homme", child: Text("Homme")),
+                  DropdownMenuItem(value: "Femme", child: Text("Femme")),
+                ],
+                onChanged: (value) => gender = value ?? "Homme",
+                decoration: const InputDecoration(labelText: "Genre"),
+              ),
               TextField(controller: roleController, decoration: const InputDecoration(labelText: "Rôle (Étudiant / Professeur / Admin)")),
             ],
           ),
@@ -89,6 +113,9 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                 'name': nameController.text.trim(),
                 'email': emailController.text.trim(),
                 'password': passwordController.text.trim(),
+                'university': universityController.text.trim(),
+                'age': int.tryParse(ageController.text.trim()),
+                'gender': gender,
                 'role': roleController.text.trim(),
                 'created_at': user?['created_at'] ?? now,
                 'updated_at': now,
@@ -110,9 +137,9 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     );
   }
 
-  /// ================================
+  /// ===============================
   /// 🔹 Widget carte de statistiques
-  /// ================================
+  /// ===============================
   Widget _buildStatCard(String title, int value, Color color) {
     return Expanded(
       child: Card(
@@ -136,9 +163,11 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     );
   }
 
-  /// 🔹 Déconnexion de l’administrateur
+  /// ===============================
+  /// 🔹 Déconnexion de l’admin
+  /// ===============================
   Future<void> _logoutAdmin() async {
-    await SessionManager.clearSession(); // supprime la session
+    await SessionManager.clearSession();
     if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
@@ -147,9 +176,9 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
     );
   }
 
-  /// ================================
+  /// ===============================
   /// 🔹 Interface principale
-  /// ================================
+  /// ===============================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,7 +187,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadDashboardData),
           IconButton(icon: const Icon(Icons.add), onPressed: () => _addOrEditUser()),
-          IconButton(icon: const Icon(Icons.logout), onPressed: _logoutAdmin), // 🚪 Déconnexion
+          IconButton(icon: const Icon(Icons.logout), onPressed: _logoutAdmin),
         ],
       ),
       body: users.isEmpty
@@ -166,8 +195,6 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
           : Column(
         children: [
           const SizedBox(height: 10),
-
-          /// 🧭 Section Dashboard
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -176,10 +203,9 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
               _buildStatCard("Événements", eventsCount, Colors.orange),
             ],
           ),
-
           const Divider(thickness: 1, height: 30),
 
-          /// 📋 Liste des utilisateurs
+          /// 📋 Liste détaillée des utilisateurs
           Expanded(
             child: ListView.builder(
               itemCount: users.length,
@@ -188,18 +214,23 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                 final name = (u['name'] ?? '').trim();
                 final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
+                final age = u['age']?.toString() ?? '-';
+                final gender = u['gender'] ?? '-';
+                final role = u['role'] ?? '-';
+                final university = u['university'] ?? '-';
+
                 return Card(
                   margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 12.0),
                   child: ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.blue.shade100,
-                      child: Text(
-                        initial,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
+                      child: Text(initial,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                     ),
                     title: Text(name.isNotEmpty ? name : 'Utilisateur inconnu'),
-                    subtitle: Text("${u['email'] ?? 'email inconnu'} (${u['role'] ?? 'N/A'})"),
+                    subtitle: Text(
+                        "${u['email'] ?? 'email inconnu'}\n$role | $gender | $age ans\nUniversité : $university"),
+                    isThreeLine: true,
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
