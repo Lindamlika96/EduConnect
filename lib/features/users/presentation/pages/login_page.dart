@@ -29,9 +29,10 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _checkSession() async {
     final loggedIn = await SessionManager.isLoggedIn();
     if (loggedIn && mounted) {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const MainPage()), // ✅ vers la page principale
+        MaterialPageRoute(builder: (_) => const MainPage()),
+            (route) => false,
       );
     }
   }

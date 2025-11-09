@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/utils/session_manager.dart';
 import 'login_page.dart';
-import 'profile_page.dart';
+import 'main_page.dart'; // ✅ on redirige vers MainPage et non ProfilePage
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,21 +20,17 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _navigateNext() async {
     await Future.delayed(const Duration(seconds: 3));
-    final loggedIn = await SessionManager.isLoggedIn();
+
+    // 🔐 Sécurité : vider la session à chaque redémarrage
+    await SessionManager.clearSession();
+
     if (!mounted) return;
 
-    if (loggedIn) {
-      final email = await SessionManager.getSessionEmail();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => ProfilePage(email: email ?? '')),
-      );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-      );
-    }
+    // 🧭 Après le splash, on redirige toujours vers la page de connexion
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+    );
   }
 
   @override
