@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:educonnect_mobile/core/utils/session_manager.dart';
 import 'package:educonnect_mobile/features/users/presentation/pages/chatbot_page.dart';
+import 'package:educonnect_mobile/core/widgets/Drawer3.dart';
 
 // 🔹 ces pages sont encore à relier à tes modules existants :
 import 'package:educonnect_mobile/features/courses/courses_page.dart';
@@ -36,6 +37,7 @@ class _MainHomePageState extends State<MainHomePage> {
       const QuizPage(),
       const EventsPage(),
       const ChatBotPage(), // ✅ Assistant IA
+      DrawerNavigationPage(email: userEmail ?? ""), // ✅ Profil
     ];
 
     return Scaffold(
@@ -71,6 +73,10 @@ class _MainHomePageState extends State<MainHomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.smart_toy_outlined),
             label: "Assistant",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: "Profil",
           ),
         ],
       ),
