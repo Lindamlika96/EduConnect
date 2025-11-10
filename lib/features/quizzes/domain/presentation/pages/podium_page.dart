@@ -32,46 +32,39 @@ class PodiumPage extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final isSmall = constraints.maxHeight < 500;
-                  final podiumHeight = isSmall ? 180.0 : 240.0;
-                  return SizedBox(
-                    height: podiumHeight,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        if (top3.length > 1)
-                          podiumColumn(
-                            username: top3[1]['username'],
-                            score: top3[1]['score'],
-                            color: Colors.blueGrey,
-                            platformHeight: 100,
-                            avatarSize: 40,
-                            rank: "2",
-                          ),
-                        podiumColumn(
-                          username: top3[0]['username'],
-                          score: top3[0]['score'],
-                          color: Colors.blue,
-                          platformHeight: 140,
-                          avatarSize: 48,
-                          rank: "1",
-                        ),
-                        if (top3.length > 2)
-                          podiumColumn(
-                            username: top3[2]['username'],
-                            score: top3[2]['score'],
-                            color: Colors.indigo,
-                            platformHeight: 80,
-                            avatarSize: 36,
-                            rank: "3",
-                          ),
-                      ],
+              IntrinsicHeight(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (top3.length > 1)
+                      podiumColumn(
+                        username: top3[1]['username'] ?? '',
+                        score: top3[1]['score'] ?? 0,
+                        color: Colors.blueGrey,
+                        platformHeight: 100,
+                        avatarSize: 40,
+                        rank: "2",
+                      ),
+                    podiumColumn(
+                      username: top3[0]['username'] ?? '',
+                      score: top3[0]['score'] ?? 0,
+                      color: Colors.blue,
+                      platformHeight: 140,
+                      avatarSize: 48,
+                      rank: "1",
                     ),
-                  );
-                },
+                    if (top3.length > 2)
+                      podiumColumn(
+                        username: top3[2]['username'] ?? '',
+                        score: top3[2]['score'] ?? 0,
+                        color: Colors.indigo,
+                        platformHeight: 80,
+                        avatarSize: 36,
+                        rank: "3",
+                      ),
+                  ],
+                ),
               ),
               const SizedBox(height: 32),
               ElevatedButton.icon(
@@ -81,6 +74,13 @@ class PodiumPage extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue[800],
                   foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ],
@@ -106,7 +106,7 @@ class PodiumPage extends StatelessWidget {
             radius: avatarSize,
             backgroundColor: color,
             child: Text(
-              username[0],
+              username.isNotEmpty ? username[0] : '?',
               style: const TextStyle(color: Colors.white, fontSize: 20),
             ),
           ),
@@ -121,7 +121,11 @@ class PodiumPage extends StatelessWidget {
               color: Colors.blue[100],
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
-                BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+                const BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
               ],
             ),
             alignment: Alignment.center,

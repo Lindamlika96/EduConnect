@@ -435,6 +435,72 @@ final quizSeeds = {
       },
     ],
   },
+
+  3: {
+    'title': 'Quiz SQL',
+    'questions': [
+      // --- FACILE ---
+      {
+        'text':
+            'Quel mot-clé SQL est utilisé pour extraire des données d’une base ?',
+        'option_a': 'SELECT',
+        'option_b': 'FETCH',
+        'option_c': 'EXTRACT',
+        'option_d': 'GET',
+        'correct_index': 0,
+        'explanation':
+            'Le mot-clé SQL utilisé pour extraire des données est SELECT. Il permet de choisir les colonnes et d’appliquer des conditions.',
+        'difficulty': 'facile',
+      },
+      {
+        'text':
+            'Quelle clause SQL permet de filtrer les résultats d’une requête ?',
+        'option_a': 'HAVING',
+        'option_b': 'GROUP BY',
+        'option_c': 'ORDER BY',
+        'option_d': 'WHERE',
+        'correct_index': 3,
+        'explanation':
+            'La clause WHERE filtre les lignes selon une condition avant l’affichage.',
+        'difficulty': 'facile',
+      },
+      {
+        'text':
+            'Quelle commande SQL est utilisée pour insérer une nouvelle ligne ?',
+        'option_a': 'INSERT INTO',
+        'option_b': 'CREATE ROW',
+        'option_c': 'ADD ROW',
+        'option_d': 'NEW ENTRY',
+        'correct_index': 0,
+        'explanation':
+            'INSERT INTO est la commande SQL pour ajouter une nouvelle ligne dans une table.',
+        'difficulty': 'moyen',
+      },
+      {
+        'text':
+            'Quel mot-clé SQL permet de regrouper les résultats par valeur commune ?',
+        'option_a': 'ORDER BY',
+        'option_b': 'GROUP BY',
+        'option_c': 'JOIN',
+        'option_d': 'UNION',
+        'correct_index': 1,
+        'explanation':
+            'GROUP BY regroupe les lignes ayant des valeurs communes, souvent avec COUNT ou SUM.',
+        'difficulty': 'moyen',
+      },
+      {
+        'text': 'Quelle commande SQL supprime une table entière ?',
+        'option_a': 'DELETE',
+        'option_b': 'DROP TABLE',
+        'option_c': 'REMOVE',
+        'option_d': 'TRUNCATE',
+        'correct_index': 1,
+        'explanation':
+            'DROP TABLE supprime complètement une table et sa structure.',
+        'difficulty': 'difficile',
+      },
+    ],
+  },
   4: {
     'title': 'Quiz Réseaux',
     'questions': [

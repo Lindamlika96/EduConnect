@@ -1,4 +1,3 @@
-import 'package:educonnect_mobile/features/quizzes/domain/presentation/pages/podium_page';
 import 'package:flutter/material.dart';
 import 'package:confetti/confetti.dart';
 import 'package:lottie/lottie.dart';
@@ -6,6 +5,7 @@ import 'dart:math';
 import 'package:printing/printing.dart';
 import 'package:educonnect_mobile/features/quizzes/domain/entities/question.dart';
 import 'package:educonnect_mobile/features/quizzes/services/certificate_service.dart';
+import 'podium_page.dart';
 
 class ResultPage extends StatefulWidget {
   final int score;

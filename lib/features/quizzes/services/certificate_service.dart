@@ -17,6 +17,7 @@ class CertificateService {
     final formattedDate =
         "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
     final ratio = ((score / total) * 100).toStringAsFixed(1);
+    final certNumber = "CERT-${date.year}-$userId-${date.millisecond}";
 
     pdf.addPage(
       pw.Page(
@@ -37,7 +38,7 @@ class CertificateService {
             child: pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
-                // Bande supérieure bleue avec logo et nom de la plateforme
+                // Bande supérieure
                 pw.Container(
                   width: double.infinity,
                   padding: const pw.EdgeInsets.symmetric(vertical: 20),
@@ -64,7 +65,24 @@ class CertificateService {
 
                 pw.Spacer(flex: 1),
 
-                // Cadre principal du certificat
+                // Badge doré
+                pw.Container(
+                  width: 60,
+                  height: 60,
+                  decoration: pw.BoxDecoration(
+                    shape: pw.BoxShape.circle,
+                    color: PdfColor.fromInt(0xFFFFD700),
+                    boxShadow: [
+                      pw.BoxShadow(color: PdfColors.grey600, blurRadius: 4),
+                    ],
+                  ),
+                  child: pw.Center(
+                    child: pw.Text("★", style: pw.TextStyle(fontSize: 28)),
+                  ),
+                ),
+                pw.SizedBox(height: 12),
+
+                // Cadre principal
                 pw.Container(
                   margin: const pw.EdgeInsets.symmetric(horizontal: 40),
                   padding: const pw.EdgeInsets.all(32),
@@ -176,6 +194,13 @@ class CertificateService {
                                   color: PdfColors.grey600,
                                 ),
                               ),
+                              pw.Text(
+                                "Certificat N° : $certNumber",
+                                style: pw.TextStyle(
+                                  fontSize: 11,
+                                  color: PdfColors.grey500,
+                                ),
+                              ),
                             ],
                           ),
                           pw.Column(
@@ -205,7 +230,7 @@ class CertificateService {
 
                 pw.Spacer(flex: 2),
 
-                // Bande inférieure avec un léger dégradé bleu
+                // Bande inférieure
                 pw.Container(
                   height: 30,
                   decoration: pw.BoxDecoration(
