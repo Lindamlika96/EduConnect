@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '../../di.dart';
 import '../../../../core/utils/session_manager.dart';
 import '../../../admin/pages/admin_users_page.dart';
-import 'main_page.dart';
+import 'main_page.dart'; // ✅ import de ta nouvelle page principale
 import 'register_page.dart';
-import 'forgot_password_page.dart'; // ✅ import ajouté ici
+import 'forgot_password_page.dart'; // ✅ déjà présent
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     if (loggedIn && mounted) {
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const MainPage()),
+        MaterialPageRoute(builder: (_) => const MainHomePage()), // ✅ changement ici
             (route) => false,
       );
     }
@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
     if (success && mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const MainPage()),
+        MaterialPageRoute(builder: (_) => const MainHomePage()), // ✅ changement ici
       );
     } else {
       setState(() => _error = "Email ou mot de passe incorrect.");
@@ -174,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const ForgotPasswordPage(), // ✅ ouverture de la page mot de passe oublié
+                              builder: (_) => const ForgotPasswordPage(),
                             ),
                           );
                         },
