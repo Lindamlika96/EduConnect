@@ -20,10 +20,7 @@ class _CourseListPageState extends State<CourseListPage>
   void initState() {
     super.initState();
     _ctrl = CoursesController.init();
-    _tab = TabController(
-      length: 2, // Tous + Mes cours
-      vsync: this,
-    );
+    _tab = TabController(length: 2, vsync: this);
   }
 
   @override
@@ -49,10 +46,7 @@ class _CourseListPageState extends State<CourseListPage>
             title: const Text('Cours'),
             bottom: TabBar(
               controller: _tab,
-              tabs: const [
-                Tab(text: 'Tous'),
-                Tab(text: 'Mes cours'),
-              ],
+              tabs: const [Tab(text: 'Tous'), Tab(text: 'Mes cours')],
             ),
           ),
           body: Column(
@@ -72,14 +66,9 @@ class _CourseListPageState extends State<CourseListPage>
                 child: TabBarView(
                   controller: _tab,
                   children: [
-                    // =======================
-                    // Onglet "Tous"
-                    // =======================
+                    // ======= Onglet "Tous"
                     RefreshIndicator(
-                      onRefresh: () async {
-                        // Forcer un rebuild en relançant la future
-                        setState(() {});
-                      },
+                      onRefresh: () async => setState(() {}),
                       child: FutureBuilder<List<Map<String, Object?>>>(
                         future: ctrl.listAll(q: _query),
                         builder: (context, snap) {
@@ -115,7 +104,6 @@ class _CourseListPageState extends State<CourseListPage>
                                         ? Icons.bookmark
                                         : Icons.bookmark_border,
                                   ),
-                                  // IMPORTANT : appel positionnel (pas de named params)
                                   onPressed: () async {
                                     await ctrl.toggleBookmark(widget.userId, id);
                                     if (mounted) setState(() {});
@@ -128,6 +116,7 @@ class _CourseListPageState extends State<CourseListPage>
                                       builder: (_) => CourseDetailPage(
                                         courseId: id,
                                         userId: widget.userId,
+                                        callToAction: 'Commencer',
                                       ),
                                     ),
                                   );
@@ -139,13 +128,9 @@ class _CourseListPageState extends State<CourseListPage>
                       ),
                     ),
 
-                    // =======================
-                    // Onglet "Mes cours"
-                    // =======================
+                    // ======= Onglet "Mes cours"
                     RefreshIndicator(
-                      onRefresh: () async {
-                        setState(() {});
-                      },
+                      onRefresh: () async => setState(() {}),
                       child: FutureBuilder<List<Map<String, Object?>>>(
                         future: ctrl.listMine(widget.userId),
                         builder: (context, snap) {
@@ -169,9 +154,14 @@ class _CourseListPageState extends State<CourseListPage>
                               final isBookmarked =
                                   ((c['is_bookmarked'] as int?) ?? 0) == 1;
 
+                              final completed = p >= 100.0;
+                              final callToAction =
+                              completed ? 'Revoir le cours' : (p > 0 ? 'Reprendre le cours' : 'Commencer');
+
                               return ListTile(
                                 title: Text(title),
-                                subtitle: Text('Progression : ${p.toStringAsFixed(0)}%'),
+                                subtitle:
+                                Text('Progression : ${p.toStringAsFixed(0)}%'),
                                 trailing: IconButton(
                                   tooltip: isBookmarked
                                       ? 'Retirer des favoris'
@@ -181,7 +171,6 @@ class _CourseListPageState extends State<CourseListPage>
                                         ? Icons.bookmark
                                         : Icons.bookmark_border,
                                   ),
-                                  // IMPORTANT : appel positionnel (pas de named params)
                                   onPressed: () async {
                                     await ctrl.toggleBookmark(widget.userId, id);
                                     if (mounted) setState(() {});
@@ -194,6 +183,7 @@ class _CourseListPageState extends State<CourseListPage>
                                       builder: (_) => CourseDetailPage(
                                         courseId: id,
                                         userId: widget.userId,
+                                        callToAction: callToAction,
                                       ),
                                     ),
                                   );

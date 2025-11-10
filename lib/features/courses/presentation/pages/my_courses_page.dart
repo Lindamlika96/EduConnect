@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../controllers/courses_controller.dart';
 import '../widgets/course_card.dart';
 import '../../../../core/utils/debouncer.dart';
+import 'course_detail_page.dart';
 
 class MyCoursesPage extends StatefulWidget {
   const MyCoursesPage({super.key});
@@ -51,9 +52,11 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_ready) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (!_ready) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
-    final pillActive = Theme.of(context).colorScheme.primary; // bleu cohérent
+    final pillActive = Theme.of(context).colorScheme.primary;
     final pillInactive = Colors.black.withOpacity(0.06);
 
     return Scaffold(
@@ -102,11 +105,14 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
             child: AnimatedBuilder(
               animation: _ctrl,
               builder: (_, __) {
-                final itemsRaw = _showCompleted ? _ctrl.state.myCompleted : _ctrl.state.myOngoing;
+                final itemsRaw =
+                _showCompleted ? _ctrl.state.myCompleted : _ctrl.state.myOngoing;
                 final q = _search.text.trim().toLowerCase();
                 final items = q.isEmpty
                     ? itemsRaw
-                    : itemsRaw.where((e) => e.course.title.toLowerCase().contains(q)).toList();
+                    : itemsRaw
+                    .where((e) => e.course.title.toLowerCase().contains(q))
+                    .toList();
 
                 if (_ctrl.state.isLoading && items.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
@@ -125,14 +131,31 @@ class _MyCoursesPageState extends State<MyCoursesPage> {
                       final vm = items[i];
                       final completed = vm.progressPercent >= 100.0;
 
+                      final callToAction =
+                      completed ? 'Revoir le cours' : (vm.progressPercent > 0 ? 'Reprendre le cours' : 'Commencer');
+
                       return CourseCard(
                         course: vm.course,
                         progressPercent: completed ? null : vm.progressPercent,
                         completed: completed,
-                        isBookmarked: _ctrl.state.bookmarks.any((b) => b.id == vm.course.id),
-                        onTap: () => Navigator.of(context).pushNamed('/course/detail', arguments: vm.course.id),
-                        onBookmarkToggle: () => _ctrl.toggleBookmark(_userId, vm.course.id),
-                        trailingButtonText: completed ? 'Voir certificat' : null,
+                        isBookmarked:
+                        _ctrl.state.bookmarks.any((b) => b.id == vm.course.id),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CourseDetailPage(
+                                courseId: vm.course.id,
+                                userId: _userId,
+                                callToAction: callToAction,
+                              ),
+                            ),
+                          );
+                        },
+                        onBookmarkToggle: () =>
+                            _ctrl.toggleBookmark(_userId, vm.course.id),
+                        trailingButtonText:
+                        completed ? 'Voir certificat' : null,
                       );
                     },
                   ),

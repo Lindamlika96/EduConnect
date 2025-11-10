@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../controllers/courses_controller.dart';
 import '../widgets/course_card.dart';
 import '../../../../core/utils/debouncer.dart';
+import 'course_detail_page.dart';
 
 class HomeCoursesPage extends StatefulWidget {
   const HomeCoursesPage({super.key});
@@ -54,7 +55,10 @@ class _HomeCoursesPageState extends State<HomeCoursesPage> {
   void _openFilters() async {
     final result = await showModalBottomSheet<(int?, int?)>(
       context: context,
-      builder: (ctx) => _FiltersSheet(initLevel: _filterLevel, initLang: _filterLanguage),
+      builder: (ctx) => _FiltersSheet(
+        initLevel: _filterLevel,
+        initLang: _filterLanguage,
+      ),
     );
     if (result != null) {
       setState(() {
@@ -116,26 +120,49 @@ class _HomeCoursesPageState extends State<HomeCoursesPage> {
                     itemBuilder: (_, i) {
                       final c = items[i];
 
-                      // trouve éventuellement la VM "en cours" correspondante
+                      // VM "en cours" correspondante (pour la progression)
                       CourseWithProgressVM? ongoingVm;
                       for (final vm in _ctrl.state.myOngoing) {
-                        if (vm.course.id == c.id) {
-                          ongoingVm = vm;
-                          break;
-                        }
+                        if (vm.course.id == c.id) { ongoingVm = vm; break; }
                       }
+
                       final bool completed =
                       _ctrl.state.myCompleted.any((e) => e.course.id == c.id);
                       final bool isBm =
                       _ctrl.state.bookmarks.any((b) => b.id == c.id);
 
+                      final double progressPct = ongoingVm?.progressPercent ?? 0.0;
+                      final bool showProgress = !completed && (progressPct > 0.0);
+
+                      // Libellé du bouton de la page de détail
+                      final String callToAction = completed
+                          ? 'Revoir le cours'
+                          : (progressPct > 0.0 ? 'Reprendre le cours' : 'Commencer');
+
+                      // Bouton sur la carte Home :
+                      // - Non commencé -> "Découvrir le cours"
+                      // - Sinon pas de bouton (les cas Reprendre/Revoir sont gérés sur la page détail)
+                      final String? trailingButton =
+                      (!completed && progressPct <= 0.0) ? 'Découvrir le cours' : null;
+
                       return CourseCard(
                         course: c,
-                        progressPercent: completed ? null : (ongoingVm?.progressPercent),
+                        // Cache la barre si non commencé ou terminé
+                        progressPercent: showProgress ? progressPct : null,
                         completed: completed,
                         isBookmarked: isBm,
-                        onTap: () => Navigator.of(context)
-                            .pushNamed('/course/detail', arguments: c.id),
+                        trailingButtonText: trailingButton,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => CourseDetailPage(
+                                courseId: c.id,
+                                userId: 1,
+                                callToAction: callToAction, // utilisé pour le libellé principal
+                              ),
+                            ),
+                          );
+                        },
                         onBookmarkToggle: () => _ctrl.toggleBookmark(1, c.id),
                       );
                     },
@@ -161,6 +188,7 @@ class _FiltersSheet extends StatefulWidget {
 class _FiltersSheetState extends State<_FiltersSheet> {
   int? _level;
   int? _lang;
+
   @override
   void initState() {
     super.initState();
@@ -210,7 +238,8 @@ class _FiltersSheetState extends State<_FiltersSheet> {
               children: [
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop<(int?, int?)>(context, (_level, _lang)),
+                    onPressed: () =>
+                        Navigator.pop<(int?, int?)>(context, (_level, _lang)),
                     child: const Text('Appliquer'),
                   ),
                 ),

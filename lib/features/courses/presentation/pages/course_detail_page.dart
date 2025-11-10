@@ -5,12 +5,18 @@ import 'course_pdf_page.dart';
 
 class CourseDetailPage extends StatefulWidget {
   final int courseId;
-  final int userId; // ✅ on ajoute ce champ
+  final int userId;
+  /// Texte du bouton d’action principal :
+  /// - "Revoir le cours" si complété
+  /// - "Reprendre le cours" si en cours
+  /// - "Commencer" par défaut
+  final String? callToAction;
 
   const CourseDetailPage({
     super.key,
     required this.courseId,
-    required this.userId, // ✅ paramètre requis
+    required this.userId,
+    this.callToAction,
   });
 
   @override
@@ -46,10 +52,12 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               return const Scaffold(body: Center(child: Text('Cours introuvable')));
             }
 
-            final title   = (c['title'] ?? '') as String;
-            final rating  = (c['rating_avg'] as num?)?.toDouble() ?? 0.0;
-            final students= (c['students_count'] as num?)?.toInt() ?? 0;
-            final pdfPath = (c['pdf_path'] ?? c['pdf_url'] ?? '') as String;
+            final title    = (c['title'] ?? '') as String;
+            final rating   = (c['rating_avg'] as num?)?.toDouble() ?? 0.0;
+            final students = (c['students_count'] as num?)?.toInt() ?? 0;
+            final pdfPath  = (c['pdf_path'] ?? c['pdf_url'] ?? '') as String;
+
+            final buttonLabel = widget.callToAction ?? 'Commencer';
 
             return Scaffold(
               appBar: AppBar(title: Text(title)),
@@ -66,7 +74,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.play_arrow),
-                        label: const Text('Commencer'),
+                        label: Text(buttonLabel),
                         onPressed: pdfPath.isEmpty
                             ? null
                             : () {
@@ -75,8 +83,8 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
                             MaterialPageRoute(
                               builder: (_) => CoursePdfPage(
                                 courseId: widget.courseId,
-                                userId: widget.userId, // ✅ on propage l’ID
-                                path: pdfPath,         // garde le nom `path` si c’est celui de ton widget
+                                userId: widget.userId,
+                                path: pdfPath,
                               ),
                             ),
                           );
