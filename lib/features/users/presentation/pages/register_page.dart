@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../di.dart';
+import 'register_profile_page.dart';
 import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -10,16 +10,14 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final _controller = provideUserController();
   final _name = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirmPassword = TextEditingController();
-  bool _loading = false;
-  String? _message;
   bool _agreeTerms = false;
+  String? _message;
 
-  Future<void> _register() async {
+  void _goToProfileStep() {
     if (_password.text.trim() != _confirmPassword.text.trim()) {
       setState(() => _message = "❌ Les mots de passe ne correspondent pas.");
       return;
@@ -29,23 +27,16 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
-    setState(() {
-      _loading = true;
-      _message = null;
-    });
-
-    try {
-      await _controller.register(
-        name: _name.text.trim(),
-        email: _email.text.trim(),
-        password: _password.text.trim(),
-      );
-      setState(() => _message = "✅ Compte créé avec succès !");
-    } catch (e) {
-      setState(() => _message = "Erreur : ${e.toString()}");
-    } finally {
-      setState(() => _loading = false);
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RegisterProfilePage(
+          name: _name.text.trim(),
+          email: _email.text.trim(),
+          password: _password.text.trim(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -55,31 +46,58 @@ class _RegisterPageState extends State<RegisterPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // 🎨 Header dégradé
-            Container(
-              height: 230,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF8A56FF), Color(0xFF0066FF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(60),
-                  bottomRight: Radius.circular(60),
-                ),
-              ),
-              child: const Center(
-                child: Text(
-                  "Créer un compte ✨",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
+            // 🟣 Header avec barre de progression
+            Stack(
+              children: [
+                Container(
+                  height: 230,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF8A56FF), Color(0xFF0066FF)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(60),
+                      bottomRight: Radius.circular(60),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      "Créer un compte ✨",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+
+                // Barre de progression
+                Positioned(
+                  bottom: 20,
+                  left: 40,
+                  right: 40,
+                  child: Column(
+                    children: [
+                      LinearProgressIndicator(
+                        value: 0.5, // 50%
+                        color: Colors.white,
+                        backgroundColor: Colors.white24,
+                        minHeight: 6,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        "Étape 1 sur 2 : Informations du compte",
+                        style: TextStyle(color: Colors.white, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
 
             const SizedBox(height: 35),
@@ -100,77 +118,15 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                     ),
 
-                  const Text("Nom complet", style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _name,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.person_outline),
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: "Votre nom complet",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
+                  _buildTextField("Nom complet", _name, Icons.person_outline, "Votre nom complet"),
                   const SizedBox(height: 20),
-
-                  const Text("Email", style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _email,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: "exemple@mail.com",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
+                  _buildTextField("Email", _email, Icons.email_outlined, "exemple@mail.com"),
                   const SizedBox(height: 20),
-
-                  const Text("Mot de passe", style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _password,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: "********",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
+                  _buildTextField("Mot de passe", _password, Icons.lock_outline, "********", obscure: true),
                   const SizedBox(height: 20),
+                  _buildTextField("Confirmer le mot de passe", _confirmPassword,
+                      Icons.lock_person_outlined, "********", obscure: true),
 
-                  const Text("Confirmer le mot de passe",
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _confirmPassword,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.lock_person_outlined),
-                      filled: true,
-                      fillColor: Colors.white,
-                      hintText: "********",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  // ✅ Case à cocher
                   Row(
                     children: [
                       Checkbox(
@@ -188,7 +144,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 10),
 
-                  // 🚀 Bouton d’inscription
+                  // 🚀 Bouton suivant
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -199,19 +155,15 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      onPressed: _loading ? null : _register,
-                      child: _loading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                        "Créer un compte",
+                      onPressed: _goToProfileStep,
+                      child: const Text(
+                        "Suivant ➡️",
                         style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
                   ),
 
                   const SizedBox(height: 30),
-
-                  // 🔁 Lien retour vers connexion
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -224,12 +176,13 @@ class _RegisterPageState extends State<RegisterPage> {
                         child: const Text(
                           "Se connecter",
                           style: TextStyle(
-                              color: Color(0xFF0066FF), fontWeight: FontWeight.w600),
+                            color: Color(0xFF0066FF),
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 40),
                 ],
               ),
@@ -237,6 +190,31 @@ class _RegisterPageState extends State<RegisterPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller,
+      IconData icon, String hint, {bool obscure = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: obscure,
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon),
+            filled: true,
+            fillColor: Colors.white,
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -47,7 +47,7 @@ class AppDatabase {
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         university TEXT,
-        role TEXT CHECK(role IN ('Étudiant', 'Professeur', 'Admin')) DEFAULT 'Étudiant',
+        role TEXT CHECK(role IN ('Étudiant', 'Professeur')) DEFAULT 'Étudiant',
         age INTEGER,
         gender TEXT CHECK(gender IN ('Homme', 'Femme')),
         created_at INTEGER NOT NULL,
