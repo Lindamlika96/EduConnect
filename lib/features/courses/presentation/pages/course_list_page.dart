@@ -1,92 +1,213 @@
 import 'package:flutter/material.dart';
-
-import '../../presentation/di.dart';
-import '../../data/dao/course_dao.dart';
+import '../controllers/courses_controller.dart';
 import 'course_detail_page.dart';
 
 class CourseListPage extends StatefulWidget {
-  const CourseListPage({super.key});
+  final int userId;
+  const CourseListPage({super.key, this.userId = 1});
 
   @override
   State<CourseListPage> createState() => _CourseListPageState();
 }
 
-class _CourseListPageState extends State<CourseListPage> {
-  late final Future<CoursesDI> _diFuture;
+class _CourseListPageState extends State<CourseListPage>
+    with SingleTickerProviderStateMixin {
+  late final Future<CoursesController> _ctrl;
+  late final TabController _tab;
+  String _query = '';
 
   @override
   void initState() {
     super.initState();
-    _diFuture = CoursesDI.init();
+    _ctrl = CoursesController.init();
+    _tab = TabController(
+      length: 2, // Tous + Mes cours
+      vsync: this,
+    );
   }
 
-  Future<void> _addDummy(CourseDao dao) async {
-    await dao.insertDummyCourse();
-    setState(() {}); // recharger la liste
+  @override
+  void dispose() {
+    _tab.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<CoursesDI>(
-      future: _diFuture,
+    return FutureBuilder<CoursesController>(
+      future: _ctrl,
       builder: (context, snap) {
         if (!snap.hasData) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        final di = snap.data!;
+        final ctrl = snap.data!;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Courses')),
-          body: FutureBuilder<List<Map<String, Object?>>>(
-            future: di.dao.fetchCourses(),
-            builder: (context, listSnap) {
-              if (listSnap.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              final rows = listSnap.data ?? const <Map<String, Object?>>[];
-
-              if (rows.isEmpty) {
-                return const Center(
-                  child: Text('Aucun cours (utilise le + pour en ajouter un).'),
-                );
-              }
-
-              return ListView.separated(
-                itemCount: rows.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, i) {
-                  final r = rows[i];
-                  final id = r['id'] as int;
-                  final title = '${r['title']}';
-                  final rating = r['rating_avg'];
-                  final students = r['students_count'];
-
-                  void openDetail() {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => CourseDetailPage(courseId: id),
-                      ),
-                    );
-                  }
-
-                  return ListTile(
-                    title: Text(title),
-                    subtitle: Text('⭐ $rating  👥 $students'),
-                    onTap: openDetail,
-                    trailing: ElevatedButton(
-                      onPressed: openDetail,
-                      child: const Text('Accéder'),
-                    ),
-                  );
-                },
-              );
-            },
+          appBar: AppBar(
+            title: const Text('Cours'),
+            bottom: TabBar(
+              controller: _tab,
+              tabs: const [
+                Tab(text: 'Tous'),
+                Tab(text: 'Mes cours'),
+              ],
+            ),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => _addDummy(di.dao),
-            child: const Icon(Icons.add),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: TextField(
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.search),
+                    hintText: 'Rechercher un cours…',
+                    border: OutlineInputBorder(),
+                  ),
+                  onChanged: (v) => setState(() => _query = v.trim()),
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  controller: _tab,
+                  children: [
+                    // =======================
+                    // Onglet "Tous"
+                    // =======================
+                    RefreshIndicator(
+                      onRefresh: () async {
+                        // Forcer un rebuild en relançant la future
+                        setState(() {});
+                      },
+                      child: FutureBuilder<List<Map<String, Object?>>>(
+                        future: ctrl.listAll(q: _query),
+                        builder: (context, snap) {
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          final rows = snap.data ?? const [];
+                          if (rows.isEmpty) {
+                            return const Center(child: Text('Aucun cours'));
+                          }
+                          return ListView.separated(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: rows.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            itemBuilder: (context, i) {
+                              final c = rows[i];
+                              final id = (c['id'] as num).toInt();
+                              final title = (c['title'] as String?) ?? 'Sans titre';
+                              final rating =
+                                  (c['rating_avg'] as num?)?.toDouble() ?? 0.0;
+                              final isBookmarked =
+                                  ((c['is_bookmarked'] as int?) ?? 0) == 1;
+
+                              return ListTile(
+                                title: Text(title),
+                                subtitle: Text('⭐ ${rating.toStringAsFixed(1)}'),
+                                trailing: IconButton(
+                                  tooltip: isBookmarked
+                                      ? 'Retirer des favoris'
+                                      : 'Ajouter aux favoris',
+                                  icon: Icon(
+                                    isBookmarked
+                                        ? Icons.bookmark
+                                        : Icons.bookmark_border,
+                                  ),
+                                  // IMPORTANT : appel positionnel (pas de named params)
+                                  onPressed: () async {
+                                    await ctrl.toggleBookmark(widget.userId, id);
+                                    if (mounted) setState(() {});
+                                  },
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => CourseDetailPage(
+                                        courseId: id,
+                                        userId: widget.userId,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+
+                    // =======================
+                    // Onglet "Mes cours"
+                    // =======================
+                    RefreshIndicator(
+                      onRefresh: () async {
+                        setState(() {});
+                      },
+                      child: FutureBuilder<List<Map<String, Object?>>>(
+                        future: ctrl.listMine(widget.userId),
+                        builder: (context, snap) {
+                          if (snap.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          final rows = snap.data ?? const [];
+                          if (rows.isEmpty) {
+                            return const Center(child: Text('Aucun cours en cours'));
+                          }
+                          return ListView.separated(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: rows.length,
+                            separatorBuilder: (_, __) => const Divider(height: 1),
+                            itemBuilder: (context, i) {
+                              final c = rows[i];
+                              final id = (c['id'] as num).toInt();
+                              final title = (c['title'] as String?) ?? 'Sans titre';
+                              final p =
+                                  (c['progress_percent'] as num?)?.toDouble() ?? 0.0;
+                              final isBookmarked =
+                                  ((c['is_bookmarked'] as int?) ?? 0) == 1;
+
+                              return ListTile(
+                                title: Text(title),
+                                subtitle: Text('Progression : ${p.toStringAsFixed(0)}%'),
+                                trailing: IconButton(
+                                  tooltip: isBookmarked
+                                      ? 'Retirer des favoris'
+                                      : 'Ajouter aux favoris',
+                                  icon: Icon(
+                                    isBookmarked
+                                        ? Icons.bookmark
+                                        : Icons.bookmark_border,
+                                  ),
+                                  // IMPORTANT : appel positionnel (pas de named params)
+                                  onPressed: () async {
+                                    await ctrl.toggleBookmark(widget.userId, id);
+                                    if (mounted) setState(() {});
+                                  },
+                                ),
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => CourseDetailPage(
+                                        courseId: id,
+                                        userId: widget.userId,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },

@@ -17,7 +17,8 @@ dependencies:
   # 🧩 Base de données locale
   sqflite: ^2.3.3
   path: ^1.8.3
-  pdfx: ^2.6.0   # 👈 ajoute cette ligne ici
+  pdfx: ^2.9.2   # 👈 ajoute cette ligne ici
+  google_fonts: ^6.2.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
