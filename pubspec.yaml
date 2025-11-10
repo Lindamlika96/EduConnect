@@ -27,6 +27,9 @@ dependencies:
   # ✨ Animation package
   flutter_animate: ^4.5.0
 
+  http: ^1.2.0  # ✅ ajoute cette ligne
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

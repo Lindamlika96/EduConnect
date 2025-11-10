@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../di.dart';
 import '../../../../core/utils/session_manager.dart';
-import '../../../admin/pages/admin_users_page.dart'; // ✅ import ajouté
+import '../../../admin/pages/admin_users_page.dart';
 import 'main_page.dart';
 import 'register_page.dart';
+import 'forgot_password_page.dart'; // ✅ import ajouté ici
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -48,7 +49,7 @@ class _LoginPageState extends State<LoginPage> {
 
     // ✅ Vérification spéciale : admin
     if (email == 'admin@admin.com' && password == '123456') {
-      await SessionManager.saveSession(email); // sauvegarde la session admin
+      await SessionManager.saveSession(email);
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -155,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
 
                   const SizedBox(height: 5),
 
-                  // 🔘 Option “se souvenir”
+                  // 🔘 Option “se souvenir” + lien vers mot de passe oublié
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -169,7 +170,14 @@ class _LoginPageState extends State<LoginPage> {
                         ],
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ForgotPasswordPage(), // ✅ ouverture de la page mot de passe oublié
+                            ),
+                          );
+                        },
                         child: const Text(
                           "Mot de passe oublié ?",
                           style: TextStyle(color: Color(0xFF0066FF)),

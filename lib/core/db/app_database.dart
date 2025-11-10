@@ -310,4 +310,26 @@ class AppDatabase {
     _db = null;
     print('🗑️ Base de données supprimée puis recréée.');
   }
+  /// ✅ Met à jour le mot de passe d’un utilisateur à partir de son email
+  static Future<int> updateUserPassword(String email, String newPassword) async {
+    final db = await database;
+    final count = await db.update(
+      'users',
+      {
+        'password': newPassword,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'email = ?',
+      whereArgs: [email],
+      conflictAlgorithm: ConflictAlgorithm.abort,
+    );
+
+    if (count > 0) {
+      logger.i("🔐 Mot de passe mis à jour pour $email");
+    } else {
+      logger.w("⚠️ Aucun utilisateur trouvé pour $email");
+    }
+    return count;
+  }
+
 }
