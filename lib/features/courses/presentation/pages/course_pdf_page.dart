@@ -4,6 +4,11 @@ import 'package:pdfx/pdfx.dart';
 
 import '../controllers/courses_controller.dart';
 
+// 👇 Téléchargement (lecture asset + save to Downloads + ouvrir)
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:file_saver/file_saver.dart';
+import 'package:open_filex/open_filex.dart';
+
 class CoursePdfPage extends StatefulWidget {
   final int courseId;
   final String path; // asset ('assets/pdfs/...') ou chemin fichier
@@ -40,6 +45,9 @@ class _CoursePdfPageState extends State<CoursePdfPage>
   // Animation du pop-up (créée en initState, jamais via un getter)
   late AnimationController _popupCtrl;
   late CurvedAnimation _popupAnim;
+
+  // Téléchargement
+  bool _downloading = false;
 
   @override
   void initState() {
@@ -87,7 +95,7 @@ class _CoursePdfPageState extends State<CoursePdfPage>
 
     var percent = (_maxPageSeen / (_totalPages > 0 ? _totalPages : 1)) * 100.0;
 
-    // Cas docs non A4 : si on atteint/depasse la DERNIÈRE page → 100 %
+    // Cas docs non A4 : si on atteint/dépasse la DERNIÈRE page → 100 %
     if (_maxPageSeen >= _totalPages || percent >= 99.5) {
       percent = 100.0;
     }
@@ -145,6 +153,70 @@ class _CoursePdfPageState extends State<CoursePdfPage>
     super.dispose();
   }
 
+  // Helpers téléchargement
+  String _basename(String path) {
+    final i = path.lastIndexOf('/');
+    return i >= 0 ? path.substring(i + 1) : path;
+  }
+
+  String _ensurePdfExtension(String name) {
+    return name.toLowerCase().endsWith('.pdf') ? name : '$name.pdf';
+  }
+
+  Future<void> _handleDownloadToPublicDownloads() async {
+    if (_downloading) return;
+    setState(() => _downloading = true);
+
+    try {
+      // 1) Lire les octets depuis l’asset (ex: assets/pdfs/flutter_basics.pdf)
+      final bytes = await rootBundle.load(widget.path);
+      final data  = bytes.buffer.asUint8List();
+
+      // 2) Nom de fichier joli (basename + extension .pdf)
+      final rawName = _basename(widget.path);
+      final fileName = _ensurePdfExtension(rawName);
+
+      // 3) Sauvegarder dans Téléchargements (MediaStore Android 10+)
+      //    file_saver gère la destination et les collisions côté système.
+      final String? savedPath = await FileSaver.instance.saveAs(
+        name: fileName,
+        bytes: data,
+        ext: 'pdf',
+        mimeType: MimeType.pdf,
+      );
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PDF enregistré dans Téléchargements : $fileName'),
+          action: SnackBarAction(
+            label: 'Ouvrir',
+            onPressed: () {
+              // savedPath peut être null (annulation ou erreur système)
+              if (savedPath != null && savedPath.isNotEmpty) {
+                OpenFilex.open(savedPath);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Fichier non disponible à l'ouverture."),
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Échec du téléchargement : $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_ready || _pdf == null) {
@@ -157,6 +229,18 @@ class _CoursePdfPageState extends State<CoursePdfPage>
       appBar: AppBar(
         title: const Text('PDF du cours'),
         actions: [
+          // Bouton de téléchargement
+          IconButton(
+            tooltip: 'Télécharger',
+            onPressed: _downloading ? null : _handleDownloadToPublicDownloads,
+            icon: _downloading
+                ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+                : const Icon(Icons.download),
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 16, top: 18),
             child: Text(

@@ -19,6 +19,12 @@ dependencies:
   path: ^1.8.3
   pdfx: ^2.9.2   # 👈 ajoute cette ligne ici
   google_fonts: ^6.2.1
+
+  # ✅ Nouveau : écriture dans Téléchargements (Android 10+)
+  file_saver: ^0.2.12
+  # ✅ Nouveau : ouvrir le fichier téléchargé dans un lecteur PDF
+  open_filex: ^4.7.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
