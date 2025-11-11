@@ -17,6 +17,8 @@ dependencies:
   # 🧩 Base de données locale
   sqflite: ^2.3.3
   path: ^1.8.3
+  http: ^1.2.2   # <--- AJOUTER ICI ///////////////////////
+  logger: ^2.6.2
 
 dev_dependencies:
   flutter_test:
@@ -27,6 +29,12 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/events/
+    - assets/ml/metrics_best_model.json
+    - assets/ml/best_model_succes.pkl
+
 
   # Exemple pour les futurs assets
   # assets:

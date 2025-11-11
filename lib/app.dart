@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:educonnect_mobile/core/widgets/dummy_widget.dart';
+import 'features/events/routes.dart';
+import 'features/events/presentation/pages/events_home_page.dart';
 
+/// =============================================================
+/// EduConnectApp — Application principale
+/// Contient la configuration globale du thème + routes.
+/// =============================================================
 class EduConnectApp extends StatelessWidget {
   const EduConnectApp({super.key});
 
@@ -9,15 +14,25 @@ class EduConnectApp extends StatelessWidget {
     return MaterialApp(
       title: 'EduConnect',
       debugShowCheckedModeBanner: false,
+
+      // 🎨 Thème global
       theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF0066FF),
         useMaterial3: true,
+        colorSchemeSeed: const Color(0xFF0066FF),
+        scaffoldBackgroundColor: const Color(0xFFEFF4FF),
+        appBarTheme: const AppBarTheme(
+          elevation: 0,
+          centerTitle: true,
+        ),
       ),
-      // ⛔️ supprime 'const' ici
-      home: Scaffold(
-        appBar: AppBar(title: const Text('EduConnect')),
-        body: const DummyWidget(),
-      ),
+
+      // 🏠 Page d’accueil = module Events
+      home: const EventsHomePage(),
+
+      // 🧭 Définition des routes du module
+      routes: {
+        ...EventsRoutes.map,
+      },
     );
   }
 }
