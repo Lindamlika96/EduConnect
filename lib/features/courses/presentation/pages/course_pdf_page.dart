@@ -1,17 +1,18 @@
+// lib/features/courses/presentation/pages/course_pdf_page.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:pdfx/pdfx.dart';
-
 import '../controllers/courses_controller.dart';
+import 'course_summary_sheet.dart';
 
-// 👇 Téléchargement (lecture asset + save to Downloads + ouvrir)
+// Téléchargement
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:file_saver/file_saver.dart';
 import 'package:open_filex/open_filex.dart';
 
 class CoursePdfPage extends StatefulWidget {
   final int courseId;
-  final String path; // asset ('assets/pdfs/...') ou chemin fichier
+  final String path; // asset ('assets/...') ou file path
   final int userId;
 
   const CoursePdfPage({
@@ -33,33 +34,27 @@ class _CoursePdfPageState extends State<CoursePdfPage>
   int _totalPages = 1;
   int _currentPage = 1;
 
-  double _lastPercent = 0.0;     // progression courante (0..100)
-  double _initialPercent = 0.0;  // progression lue au démarrage
+  double _lastPercent = 0.0;
+  double _initialPercent = 0.0;
   int _maxPageSeen = 1;
 
   bool _ready = false;
-  bool _completionDialogShownNow = false; // pour la session courante
+  bool _completionDialogShownNow = false;
+  bool _openingSummary = false;
 
   bool get _canStartQuiz => _lastPercent >= 100.0;
 
-  // Animation du pop-up (créée en initState, jamais via un getter)
   late AnimationController _popupCtrl;
   late CurvedAnimation _popupAnim;
 
-  // Téléchargement
   bool _downloading = false;
 
   @override
   void initState() {
     super.initState();
-    _popupCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 260),
-    );
-    _popupAnim = CurvedAnimation(
-      parent: _popupCtrl,
-      curve: Curves.easeOutBack,
-    );
+    _popupCtrl =
+        AnimationController(vsync: this, duration: const Duration(milliseconds: 260));
+    _popupAnim = CurvedAnimation(parent: _popupCtrl, curve: Curves.easeOutBack);
     _boot();
   }
 
@@ -94,25 +89,19 @@ class _CoursePdfPageState extends State<CoursePdfPage>
     _maxPageSeen = max(_maxPageSeen, currentPage1);
 
     var percent = (_maxPageSeen / (_totalPages > 0 ? _totalPages : 1)) * 100.0;
-
-    // Cas docs non A4 : si on atteint/dépasse la DERNIÈRE page → 100 %
     if (_maxPageSeen >= _totalPages || percent >= 99.5) {
       percent = 100.0;
     }
 
-    // On ne sauvegarde que si on progresse réellement
     if (percent > _lastPercent + 0.2) {
       _lastPercent = percent;
       _ctrl.updateProgressMax(widget.userId, widget.courseId, _lastPercent);
       setState(() {});
-
-      // Fenêtre d’avis : uniquement si l’utilisateur vient d’atteindre 100 %
-      // dans CETTE session ET qu’il n’était pas déjà à 100 % au démarrage.
       if (_initialPercent < 100.0 && _lastPercent >= 100.0) {
         _showCompletionOnce();
       }
     } else {
-      setState(() {}); // simple repaint pour la barre top
+      setState(() {});
     }
   }
 
@@ -123,7 +112,7 @@ class _CoursePdfPageState extends State<CoursePdfPage>
     _popupCtrl.forward();
     showDialog(
       context: context,
-      barrierDismissible: false, // impossible de fermer sans note
+      barrierDismissible: false,
       builder: (ctx) => ScaleTransition(
         scale: _popupAnim,
         child: _CompletionDialogFr(
@@ -147,13 +136,12 @@ class _CoursePdfPageState extends State<CoursePdfPage>
 
   @override
   void dispose() {
-    // ⚠️ Aucun accès au contexte ici
     _popupCtrl.dispose();
     _pdf?.dispose();
     super.dispose();
   }
 
-  // Helpers téléchargement
+  // Téléchargement
   String _basename(String path) {
     final i = path.lastIndexOf('/');
     return i >= 0 ? path.substring(i + 1) : path;
@@ -168,16 +156,12 @@ class _CoursePdfPageState extends State<CoursePdfPage>
     setState(() => _downloading = true);
 
     try {
-      // 1) Lire les octets depuis l’asset (ex: assets/pdfs/flutter_basics.pdf)
       final bytes = await rootBundle.load(widget.path);
-      final data  = bytes.buffer.asUint8List();
+      final data = bytes.buffer.asUint8List();
 
-      // 2) Nom de fichier joli (basename + extension .pdf)
       final rawName = _basename(widget.path);
       final fileName = _ensurePdfExtension(rawName);
 
-      // 3) Sauvegarder dans Téléchargements (MediaStore Android 10+)
-      //    file_saver gère la destination et les collisions côté système.
       final String? savedPath = await FileSaver.instance.saveAs(
         name: fileName,
         bytes: data,
@@ -193,7 +177,6 @@ class _CoursePdfPageState extends State<CoursePdfPage>
           action: SnackBarAction(
             label: 'Ouvrir',
             onPressed: () {
-              // savedPath peut être null (annulation ou erreur système)
               if (savedPath != null && savedPath.isNotEmpty) {
                 OpenFilex.open(savedPath);
               } else {
@@ -209,11 +192,48 @@ class _CoursePdfPageState extends State<CoursePdfPage>
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Échec du téléchargement : $e')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Échec du téléchargement : $e')));
     } finally {
       if (mounted) setState(() => _downloading = false);
+    }
+  }
+
+  Future<void> _openSummarySheet() async {
+    if (_openingSummary) return;
+    setState(() => _openingSummary = true);
+
+    try {
+      final isAsset = widget.path.startsWith('assets/');
+      if (!isAsset) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Résumé disponible pour les assets.')),
+        );
+        return;
+      }
+
+      final summary = await _ctrl.summarizeCourse(
+        courseId: widget.courseId,
+        language: 'fr',
+        assetPdfPath: widget.path, // requis (non-null)
+        forceRefresh: false,
+      );
+
+      if (!mounted) return;
+      await showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (_) => CourseSummarySheet(summary: summary),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('Impossible de générer le résumé: $e')));
+    } finally {
+      if (mounted) setState(() => _openingSummary = false);
     }
   }
 
@@ -222,23 +242,18 @@ class _CoursePdfPageState extends State<CoursePdfPage>
     if (!_ready || _pdf == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
     final alreadyCompletedAtOpen = _initialPercent >= 100.0;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('PDF du cours'),
         actions: [
-          // Bouton de téléchargement
           IconButton(
             tooltip: 'Télécharger',
             onPressed: _downloading ? null : _handleDownloadToPublicDownloads,
             icon: _downloading
                 ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
+                width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.download),
           ),
           Padding(
@@ -260,8 +275,6 @@ class _CoursePdfPageState extends State<CoursePdfPage>
         controller: _pdf!,
         onDocumentLoaded: (doc) {
           _totalPages = doc.pagesCount;
-
-          // Reprise à la bonne page après rendu
           WidgetsBinding.instance.addPostFrameCallback((_) {
             final start = _pageFromPercent();
             _maxPageSeen = start;
@@ -275,38 +288,28 @@ class _CoursePdfPageState extends State<CoursePdfPage>
           options: const DefaultBuilderOptions(),
           documentLoaderBuilder: (_) =>
           const Center(child: CircularProgressIndicator()),
-          pageLoaderBuilder: (_) =>
-          const Center(child: CircularProgressIndicator()),
-          errorBuilder: (_, error) =>
-              Center(child: Text('Erreur PDF : $error')),
+          pageLoaderBuilder: (_) => const Center(child: CircularProgressIndicator()),
+          errorBuilder: (_, error) => Center(child: Text('Erreur PDF : $error')),
         ),
       ),
-
-      // Bas d’écran : si le cours était déjà terminé au démarrage,
-      // on N’AFFICHE PAS “Passer au quiz”. (seulement “Voir résumé”)
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: Row(
           children: [
             Expanded(
               child: OutlinedButton(
-                onPressed: () {
-                  // TODO: Voir résumé
-                },
+                onPressed: _openSummarySheet,
                 child: const Text('Voir résumé'),
               ),
             ),
             const SizedBox(width: 12),
-            if (!alreadyCompletedAtOpen) ...[
+            if (!alreadyCompletedAtOpen)
               Expanded(
                 child: ElevatedButton(
-                  onPressed: _canStartQuiz ? () {
-                    // TODO: Naviguer vers le quiz
-                  } : null,
+                  onPressed: _canStartQuiz ? () {} : null,
                   child: const Text('Passer au quiz'),
                 ),
               ),
-            ],
           ],
         ),
       ),
@@ -315,7 +318,6 @@ class _CoursePdfPageState extends State<CoursePdfPage>
 }
 
 /* --------------------------- Dialog FR “Cours terminé” --------------------------- */
-
 class _CompletionDialogFr extends StatefulWidget {
   final Future<void> Function(int stars) onRatedOnly;
   final Future<void> Function(int stars, String comment) onRatedWithComment;
@@ -356,8 +358,7 @@ class _CompletionDialogFrState extends State<_CompletionDialogFr> {
                 ),
               ),
               const SizedBox(height: 12),
-              Text('Rédiger un avis',
-                  style: Theme.of(ctx).textTheme.titleMedium),
+              Text('Rédiger un avis', style: Theme.of(ctx).textTheme.titleMedium),
               const SizedBox(height: 8),
               TextField(
                 controller: ctrl,
@@ -399,25 +400,20 @@ class _CompletionDialogFrState extends State<_CompletionDialogFr> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // La croix n’apparaît QUE si au moins 1 étoile a été choisie
-              Row(
-                children: [
-                  const Spacer(),
-                  if (_stars > 0)
-                    IconButton(
-                      tooltip: 'Fermer',
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.close),
-                    ),
-                ],
-              ),
+              Row(children: [
+                const Spacer(),
+                if (_stars > 0)
+                  IconButton(
+                    tooltip: 'Fermer',
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+              ]),
               Container(
                 width: 96,
                 height: 96,
-                decoration: BoxDecoration(
-                  color: primary.withOpacity(.12),
-                  shape: BoxShape.circle,
-                ),
+                decoration:
+                BoxDecoration(color: primary.withOpacity(.12), shape: BoxShape.circle),
                 child: Icon(Icons.school, size: 56, color: primary),
               ),
               const SizedBox(height: 12),
@@ -427,16 +423,11 @@ class _CompletionDialogFrState extends State<_CompletionDialogFr> {
                     color: theme.colorScheme.onSurface,
                   )),
               const SizedBox(height: 6),
-              Text(
-                'Bravo ! Donnez une note à ce cours.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
+              Text('Bravo ! Donnez une note à ce cours.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall
+                      ?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
               const SizedBox(height: 16),
-
-              // ★★★★☆ avec couleurs
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(5, (i) {
@@ -447,7 +438,7 @@ class _CompletionDialogFrState extends State<_CompletionDialogFr> {
                     child: GestureDetector(
                       onTap: () async {
                         setState(() => _stars = idx);
-                        await widget.onRatedOnly(_stars); // enregistre la note
+                        await widget.onRatedOnly(_stars);
                       },
                       child: AnimatedScale(
                         scale: filled ? 1.15 : 1.0,
@@ -462,7 +453,6 @@ class _CompletionDialogFrState extends State<_CompletionDialogFr> {
                   );
                 }),
               ),
-
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -476,9 +466,8 @@ class _CompletionDialogFrState extends State<_CompletionDialogFr> {
               Text(
                 'Choisissez d’abord une note.\nLe commentaire est optionnel.',
                 textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
               ),
             ],
           ),
