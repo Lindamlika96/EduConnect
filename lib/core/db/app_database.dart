@@ -1,5 +1,9 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:logger/logger.dart';
+
+/// Instance globale du logger
+final logger = Logger();
 
 /// Gestionnaire central de la base de données locale SQLite.
 /// Responsable de la création, de l’ouverture et des migrations.
@@ -18,10 +22,9 @@ class AppDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'educonnect.db');
 
-    // Ouvre la base et applique la structure initiale
     return await openDatabase(
       path,
-      version: 2, // migration mineure
+      version: 3, // ✅ version mise à jour
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -32,9 +35,6 @@ class AppDatabase {
 
   /// Création initiale des tables
   static Future<void> _onCreate(Database db, int version) async {
-    // =====================
-    // 🧍 Table USERS
-    // =====================
     await db.execute('''
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,10 +49,19 @@ class AppDatabase {
         updated_at INTEGER NOT NULL
       );
     ''');
+    // ✅ Insertion de l'utilisateur admin par défaut
+    await db.insert('users', {
+      'name': 'Admin',
+      'email': 'admin@admin.com',
+      'password': '123456', // en local, pas besoin de hash
+      'university': 'Administration Centrale',
+      'role': 'Admin',
+      'age': 30,
+      'gender': 'Femme',
+      'created_at': DateTime.now().millisecondsSinceEpoch,
+      'updated_at': DateTime.now().millisecondsSinceEpoch,
+    });
 
-    // =====================
-    // 📚 Table COURSE
-    // =====================
     await db.execute('''
       CREATE TABLE course (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,9 +84,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 🔖 Table COURSE_BOOKMARK
-    // =====================
     await db.execute('''
       CREATE TABLE course_bookmark (
         user_id INTEGER NOT NULL,
@@ -89,9 +95,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // ⭐ Table COURSE_REVIEW
-    // =====================
     await db.execute('''
       CREATE TABLE course_review (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -105,9 +108,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 📈 Table COURSE_PROGRESS
-    // =====================
     await db.execute('''
       CREATE TABLE course_progress (
         user_id INTEGER NOT NULL,
@@ -120,9 +120,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 🧠 Table QUIZ
-    // =====================
     await db.execute('''
       CREATE TABLE quiz (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -133,9 +130,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // ❓ Table QUESTION
-    // =====================
     await db.execute('''
       CREATE TABLE question (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -149,13 +143,13 @@ class AppDatabase {
         theme TEXT,
         explanation TEXT,
         difficulty TEXT NOT NULL DEFAULT 'facile',
+        code_snippet TEXT,
+        expected_output TEXT,
+        language_id INTEGER,
         FOREIGN KEY (quiz_id) REFERENCES quiz(id) ON DELETE CASCADE
       );
     ''');
 
-    // =====================
-    // 🏆 Table RESULT
-    // =====================
     await db.execute('''
       CREATE TABLE result (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -169,9 +163,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 🎟️ Table EVENTS
-    // =====================
     await db.execute('''
       CREATE TABLE events (
         id_evenement INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -195,9 +186,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 🧾 Table EVENEMENT_PARTICIPATION
-    // =====================
     await db.execute('''
       CREATE TABLE evenement_participation (
         evenement_id INTEGER NOT NULL,
@@ -209,9 +197,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 📌 Index
-    // =====================
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_course_title ON course(title);',
     );
@@ -248,36 +233,43 @@ class AppDatabase {
 
   /// Migration mineure pour anciens clones
   static Future<void> _onUpgrade(
-    Database db,
-    int oldVersion,
-    int newVersion,
-  ) async {
+      Database db,
+      int oldVersion,
+      int newVersion,
+      ) async {
     if (oldVersion < 2) {
       await db.execute('PRAGMA foreign_keys = ON;');
       await db.execute(
         'CREATE UNIQUE INDEX IF NOT EXISTS uq_quiz_course_id ON quiz(course_id);',
       );
 
-      await db.execute(
-        'CREATE TRIGGER IF NOT EXISTS trg_course_delete_bookmark '
-        'AFTER DELETE ON course FOR EACH ROW BEGIN '
-        'DELETE FROM course_bookmark WHERE course_id = OLD.id; '
-        'DELETE FROM course_review WHERE course_id = OLD.id; '
-        'DELETE FROM course_progress WHERE course_id = OLD.id; '
-        'DELETE FROM result WHERE quiz_id IN (SELECT id FROM quiz WHERE course_id = OLD.id); '
-        'DELETE FROM question WHERE quiz_id IN (SELECT id FROM quiz WHERE course_id = OLD.id); '
-        'DELETE FROM quiz WHERE course_id = OLD.id; '
-        'END;',
-      );
+      await db.execute('''
+        CREATE TRIGGER IF NOT EXISTS trg_course_delete_bookmark
+        AFTER DELETE ON course FOR EACH ROW BEGIN
+          DELETE FROM course_bookmark WHERE course_id = OLD.id;
+          DELETE FROM course_review WHERE course_id = OLD.id;
+          DELETE FROM course_progress WHERE course_id = OLD.id;
+          DELETE FROM result WHERE quiz_id IN (SELECT id FROM quiz WHERE course_id = OLD.id);
+          DELETE FROM question WHERE quiz_id IN (SELECT id FROM quiz WHERE course_id = OLD.id);
+          DELETE FROM quiz WHERE course_id = OLD.id;
+        END;
+      ''');
 
-      await db.execute(
-        'CREATE TRIGGER IF NOT EXISTS trg_quiz_delete_children '
-        'AFTER DELETE ON quiz FOR EACH ROW BEGIN '
-        'DELETE FROM question WHERE quiz_id = OLD.id; '
-        'DELETE FROM result WHERE quiz_id = OLD.id; '
-        'END;',
-      );
+      await db.execute('''
+        CREATE TRIGGER IF NOT EXISTS trg_quiz_delete_children
+        AFTER DELETE ON quiz FOR EACH ROW BEGIN
+          DELETE FROM question WHERE quiz_id = OLD.id;
+          DELETE FROM result WHERE quiz_id = OLD.id;
+        END;
+      ''');
     }
+
+    if (oldVersion < 3) {
+      await db.execute("ALTER TABLE question ADD COLUMN code_snippet TEXT;");
+      await db.execute("ALTER TABLE question ADD COLUMN expected_output TEXT;");
+      await db.execute("ALTER TABLE question ADD COLUMN language_id INTEGER;");
+    }
+
     print(
       '⚙️ Migration de la base : version $oldVersion → $newVersion terminée.',
     );
@@ -292,5 +284,30 @@ class AppDatabase {
     await deleteDatabase(path);
     _db = null;
     print('🗑️ Base de données supprimée puis recréée.');
+  }
+
+  /// ✅ Met à jour le mot de passe d’un utilisateur à partir de son email
+  static Future<int> updateUserPassword(
+      String email,
+      String newPassword,
+      ) async {
+    final db = await database;
+    final count = await db.update(
+      'users',
+      {
+        'password': newPassword,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'email = ?',
+      whereArgs: [email],
+      conflictAlgorithm: ConflictAlgorithm.abort,
+    );
+
+    if (count > 0) {
+      logger.i("🔐 Mot de passe mis à jour pour $email");
+    } else {
+      logger.w("⚠️ Aucun utilisateur trouvé pour $email");
+    }
+    return count;
   }
 }
