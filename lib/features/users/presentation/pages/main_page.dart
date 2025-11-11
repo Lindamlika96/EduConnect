@@ -4,9 +4,10 @@ import 'package:educonnect_mobile/features/users/presentation/pages/chatbot_page
 import 'package:educonnect_mobile/core/widgets/Drawer3.dart';
 
 // 🔹 ces pages sont encore à relier à tes modules existants :
-import 'package:educonnect_mobile/features/courses/courses_page.dart';
-import 'package:educonnect_mobile/features/quizzes/quiz_page.dart';
-import 'package:educonnect_mobile/features/events/events_page.dart';
+import 'package:educonnect_mobile/features/courses/presentation/pages/home_courses_page.dart';
+import 'package:educonnect_mobile/features/courses/presentation/pages/my_courses_page.dart';
+import 'package:educonnect_mobile/features/courses/presentation/pages/bookmarks_page.dart';
+
 
 class MainHomePage extends StatefulWidget {
   const MainHomePage({super.key});
@@ -33,9 +34,9 @@ class _MainHomePageState extends State<MainHomePage> {
   @override
   Widget build(BuildContext context) {
     final pages = [
-      const CoursesPage(),
-      const QuizPage(),
-      const EventsPage(),
+      const HomeCoursesPage(),
+      const MyCoursesPage(),
+      const BookmarksPage(),
       const ChatBotPage(), // ✅ Assistant IA
       DrawerNavigationPage(email: userEmail ?? ""), // ✅ Profil
     ];
@@ -64,11 +65,11 @@ class _MainHomePageState extends State<MainHomePage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.quiz_outlined),
-            label: "Quiz",
+            label: "Mes cours",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event_available_outlined),
-            label: "Événements",
+            label: "Favoris",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.smart_toy_outlined),

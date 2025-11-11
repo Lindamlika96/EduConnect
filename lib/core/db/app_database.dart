@@ -2,6 +2,9 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:logger/logger.dart';
 
+// 🔹 Import du DAO pour initialisation automatique
+import 'package:educonnect_mobile/features/quizzes/data/dao/quiz_dao_impl.dart';
+
 /// Instance globale du logger
 final logger = Logger();
 
@@ -22,10 +25,9 @@ class AppDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'educonnect.db');
 
-    // Ouvre la base et applique la structure initiale
     return await openDatabase(
       path,
-      version: 2, // migration mineure
+      version: 3, // ✅ version mise à jour
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
@@ -34,12 +36,11 @@ class AppDatabase {
     );
   }
 
-
   /// Création initiale des tables
   static Future<void> _onCreate(Database db, int version) async {
-    // =====================
-    // 🧍 Table USERS
-    // =====================
+    // =========================================================
+    // 👥 TABLE USERS
+    // =========================================================
     await db.execute('''
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,18 +48,19 @@ class AppDatabase {
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         university TEXT,
-        role TEXT CHECK(role IN ('Étudiant', 'Professeur')) DEFAULT 'Étudiant',
+        role TEXT CHECK(role IN ('Étudiant', 'Professeur', 'Admin')) DEFAULT 'Étudiant',
         age INTEGER,
         gender TEXT CHECK(gender IN ('Homme', 'Femme')),
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
       );
     ''');
+
     // ✅ Insertion de l'utilisateur admin par défaut
     await db.insert('users', {
       'name': 'Admin',
       'email': 'admin@admin.com',
-      'password': '123456', // en local, pas besoin de hash
+      'password': '123456', // mot de passe simple en local
       'university': 'Administration Centrale',
       'role': 'Admin',
       'age': 30,
@@ -67,9 +69,9 @@ class AppDatabase {
       'updated_at': DateTime.now().millisecondsSinceEpoch,
     });
 
-    // =====================
-    // 📚 Table COURSE
-    // =====================
+    // =========================================================
+    // 📘 TABLE COURSES
+    // =========================================================
     await db.execute('''
       CREATE TABLE course (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -92,9 +94,9 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 🔖 Table COURSE_BOOKMARK
-    // =====================
+    // =========================================================
+    // 📚 AUTRES TABLES COURS
+    // =========================================================
     await db.execute('''
       CREATE TABLE course_bookmark (
         user_id INTEGER NOT NULL,
@@ -106,9 +108,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // ⭐ Table COURSE_REVIEW
-    // =====================
     await db.execute('''
       CREATE TABLE course_review (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -122,9 +121,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 📈 Table COURSE_PROGRESS
-    // =====================
     await db.execute('''
       CREATE TABLE course_progress (
         user_id INTEGER NOT NULL,
@@ -137,9 +133,9 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 🧠 Table QUIZ
-    // =====================
+    // =========================================================
+    // 🧠 TABLE QUIZZES
+    // =========================================================
     await db.execute('''
       CREATE TABLE quiz (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -150,29 +146,26 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // ❓ Table QUESTION
-    // =====================
     await db.execute('''
       CREATE TABLE question (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         quiz_id INTEGER NOT NULL,
         text TEXT NOT NULL,
-        option_a TEXT NOT NULL,
-        option_b TEXT NOT NULL,
-        option_c TEXT NOT NULL,
-        option_d TEXT NOT NULL,
-        correct_index INTEGER NOT NULL CHECK(correct_index BETWEEN 0 AND 3),
+        option_a TEXT,
+        option_b TEXT,
+        option_c TEXT,
+        option_d TEXT,
+        correct_index INTEGER,
         theme TEXT,
         explanation TEXT,
         difficulty TEXT NOT NULL DEFAULT 'facile',
+        code_snippet TEXT,
+        expected_output TEXT,
+        language_id INTEGER,
         FOREIGN KEY (quiz_id) REFERENCES quiz(id) ON DELETE CASCADE
       );
     ''');
 
-    // =====================
-    // 🏆 Table RESULT
-    // =====================
     await db.execute('''
       CREATE TABLE result (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -186,9 +179,9 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 🎟️ Table EVENTS
-    // =====================
+    // =========================================================
+    // 🎉 TABLE EVENTS
+    // =========================================================
     await db.execute('''
       CREATE TABLE events (
         id_evenement INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -212,9 +205,6 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 🧾 Table EVENEMENT_PARTICIPATION
-    // =====================
     await db.execute('''
       CREATE TABLE evenement_participation (
         evenement_id INTEGER NOT NULL,
@@ -226,21 +216,9 @@ class AppDatabase {
       );
     ''');
 
-    // =====================
-    // 📌 Index
-    // =====================
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_course_title ON course(title);',
-    );
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_course_level ON course(level);',
-    );
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_course_language ON course(language);',
-    );
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_course_rating ON course(rating_avg DESC, rating_count DESC);',
-    );
+    // =========================================================
+    // 🔍 INDEX
+    // =========================================================
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_quiz_course ON quiz(course_id);',
     );
@@ -250,54 +228,38 @@ class AppDatabase {
     await db.execute(
       'CREATE INDEX IF NOT EXISTS idx_result_quiz_user ON result(quiz_id, user_id);',
     );
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_bookmark_user_date ON course_bookmark(user_id, created_at DESC);',
-    );
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_review_course_date ON course_review(course_id, created_at DESC);',
-    );
-    await db.execute(
-      'CREATE INDEX IF NOT EXISTS idx_progress_user_date ON course_progress(user_id, updated_at DESC);',
-    );
 
-    print('✅ Toutes les tables et index ont été créés avec succès.');
+    // =========================================================
+    // 🌱 INITIALISATION AUTOMATIQUE DES SEEDS
+    // =========================================================
+    try {
+      final dao = QuizDaoImpl(Future.value(db));
+      await dao.initSeeds();
+      logger.i("🌱 Seeds de quiz insérés avec succès lors de la création DB.");
+    } catch (e) {
+      logger.e("❌ Erreur lors de l’initialisation des seeds : $e");
+    }
+
+    print('✅ Toutes les tables, index et seeds ont été créés avec succès.');
   }
 
   /// Migration mineure pour anciens clones
   static Future<void> _onUpgrade(
-      Database db,
-      int oldVersion,
-      int newVersion,
-      ) async {
+      Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('PRAGMA foreign_keys = ON;');
       await db.execute(
         'CREATE UNIQUE INDEX IF NOT EXISTS uq_quiz_course_id ON quiz(course_id);',
       );
-
-      await db.execute(
-        'CREATE TRIGGER IF NOT EXISTS trg_course_delete_bookmark '
-            'AFTER DELETE ON course FOR EACH ROW BEGIN '
-            'DELETE FROM course_bookmark WHERE course_id = OLD.id; '
-            'DELETE FROM course_review WHERE course_id = OLD.id; '
-            'DELETE FROM course_progress WHERE course_id = OLD.id; '
-            'DELETE FROM result WHERE quiz_id IN (SELECT id FROM quiz WHERE course_id = OLD.id); '
-            'DELETE FROM question WHERE quiz_id IN (SELECT id FROM quiz WHERE course_id = OLD.id); '
-            'DELETE FROM quiz WHERE course_id = OLD.id; '
-            'END;',
-      );
-
-      await db.execute(
-        'CREATE TRIGGER IF NOT EXISTS trg_quiz_delete_children '
-            'AFTER DELETE ON quiz FOR EACH ROW BEGIN '
-            'DELETE FROM question WHERE quiz_id = OLD.id; '
-            'DELETE FROM result WHERE quiz_id = OLD.id; '
-            'END;',
-      );
     }
-    print(
-      '⚙️ Migration de la base : version $oldVersion → $newVersion terminée.',
-    );
+
+    if (oldVersion < 3) {
+      await db.execute("ALTER TABLE question ADD COLUMN code_snippet TEXT;");
+      await db.execute("ALTER TABLE question ADD COLUMN expected_output TEXT;");
+      await db.execute("ALTER TABLE question ADD COLUMN language_id INTEGER;");
+    }
+
+    print('⚙️ Migration de la base : version $oldVersion → $newVersion terminée.');
   }
 
   /// Réinitialisation complète de la base (utile pour tests)
@@ -310,6 +272,7 @@ class AppDatabase {
     _db = null;
     print('🗑️ Base de données supprimée puis recréée.');
   }
+
   /// ✅ Met à jour le mot de passe d’un utilisateur à partir de son email
   static Future<int> updateUserPassword(String email, String newPassword) async {
     final db = await database;
@@ -331,5 +294,4 @@ class AppDatabase {
     }
     return count;
   }
-
 }

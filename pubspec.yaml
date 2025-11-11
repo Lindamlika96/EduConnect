@@ -11,42 +11,84 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Logging package
-  logger: ^2.0.2
-
-  # Session management
-  shared_preferences: ^2.3.2
-
-  # Icons for iOS style UI
+  # 🌙 UI & Icons
   cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
 
   # 🧩 Base de données locale
   sqflite: ^2.3.3
   path: ^1.8.3
 
-  # ✨ Animation package
+  # ⚙️ Gestion de session & préférences locales
+  shared_preferences: ^2.3.2
+
+  confetti: ^0.7.0
+
+  printing: ^5.12.0
+
+  screen_protector: ^1.4.5
+
+  # 🧾 PDF et fichiers
+  pdfx: ^2.9.2         # Affichage des PDF
+  file_saver: ^0.2.12  # Sauvegarde locale (Android 10+)
+  open_filex: ^4.7.0   # Ouverture du PDF téléchargé
+
+  pdf: ^3.10.7
+
+  fl_chart: ^0.68.0
+
+
+  # 🤖 IA et environnement
+  google_generative_ai: ^0.4.4
+  flutter_dotenv: ^5.1.0
+
+  # ✨ Animation et affichage fluide
   flutter_animate: ^4.5.0
+  animated_text_kit: ^4.2.2       # ✅ Texte animé pour les quiz
+  lottie: ^3.1.2                  # ✅ Animations Lottie (succès, échec, etc.)
 
-  http: ^1.2.0  # ✅ ajoute cette ligne
+  # 🌐 Requêtes HTTP
+  http: ^1.2.0
 
+  # 🧰 Logger pour le débogage
+  logger: ^2.6.2
+
+  # 🎯 Module Quiz (gestion et parsing local/JSON)
+  provider: ^6.1.2
+  intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  # SQLite support for testing on desktop/VM
+  # 🧠 Support SQLite pour les tests sur desktop/VM
   sqflite_common_ffi: ^2.3.3+1
 
-  # Recommended lint rules
+  # ✅ Bonnes pratiques et linting
   flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
 
-  # Exemple pour les futurs assets
-  # assets:
-  #   - assets/images/
-  #
+  assets:
+    # 📚 Cours et ressources
+    - assets/pdfs/
+    - assets/summaries/
+    - assets/quizzes/
+    - .env
+
+    # 🎞️ Animations Lottie (ajout complet)
+    - assets/animations/learning.json
+    - assets/animations/learing.json         # (vérifie l’orthographe exacte du fichier)
+    - assets/animations/level_up_easy.json
+    - assets/animations/level_up_medium.json
+    - assets/animations/level_up_hard.json
+    - assets/animations/welcome.json
+    - assets/animations/book.json
+    - assets/animations/ai_bot.json
+    - assets/animations/celebrate.json
+    - assets/animations/podium.json
+
   # Exemple pour les polices
   # fonts:
   #   - family: Poppins

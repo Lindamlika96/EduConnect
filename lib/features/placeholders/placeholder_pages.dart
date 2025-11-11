@@ -35,18 +35,21 @@ class QuizPage extends StatelessWidget {
 }
 
 /// 🎉 Page temporaire pour les Événements
-class EventsPage extends StatelessWidget {
-  const EventsPage({super.key});
+/// 🎉 Placeholder temporaire pour les Événements (renommé pour éviter le conflit)
+class EventsPlaceholderPage extends StatelessWidget {
+  const EventsPlaceholderPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
         child: Text(
-          '🎉 Page des événements (à venir)',
+          '🎉 Page des événements (placeholder)',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
       ),
     );
   }
 }
+
+
